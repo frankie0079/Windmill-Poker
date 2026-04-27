@@ -1,0 +1,10 @@
+# Temp files
+~$*
+served_page.html
+screenshot*.png
+
+# Brainstorm session state (PIDs, server info)
+.superpowers/brainstorm/*/state/
+
+# Old intermediate mockup versions (keep only final content)
+.superpowers/brainstorm/1598-1777301666/
