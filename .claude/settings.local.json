@@ -20,7 +20,19 @@
       "Read(//c/DEV/sandbox/superpowers-framework/skills/brainstorming//**)",
       "Read(//c/DEV/sandbox/superpowers-framework/skills/brainstorming/**)",
       "Bash(curl -s -o /dev/null -w \"root: %{http_code}\\\\n\" http://localhost:54677/)",
-      "Bash(curl -s -o /dev/null -w \"named: %{http_code}\\\\n\" http://localhost:54677/admin-alle.html)"
+      "Bash(curl -s -o /dev/null -w \"named: %{http_code}\\\\n\" http://localhost:54677/admin-alle.html)",
+      "Bash(supabase --version)",
+      "Bash(winget --version)",
+      "Bash(scoop --version)",
+      "Bash(winget install *)",
+      "Bash(winget search *)",
+      "PowerShell(Set-ExecutionPolicy *)",
+      "PowerShell(scoop *)",
+      "PowerShell(supabase *)",
+      "PowerShell(supabase init *)",
+      "PowerShell(supabase migration *)",
+      "PowerShell(Start-Process -FilePath \"C:\\\\DEV\\\\sandbox\\\\Superpowers-Trial_one\\\\setup-supabase.bat\")",
+      "PowerShell(supabase db *)"
     ]
   },
   "hooks": {
