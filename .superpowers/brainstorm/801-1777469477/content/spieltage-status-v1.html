@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Spieltage – Status (offen/abgeschlossen)</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;600;700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;padding:32px 24px;background:#1a1a2e;font-family:'Work Sans',sans-serif;color:#F2E7CE}
+  .stack{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:12px;color:#E9B63A;font-weight:600;margin-bottom:8px;text-align:center}
+  .frame{background:#F2E7CE;background-image:radial-gradient(rgba(14,26,26,.04) 1px,transparent 1px),radial-gradient(rgba(14,26,26,.03) 1px,transparent 1px);background-size:3px 3px,7px 7px;border-radius:14px;border:2px solid #0E1A1A;overflow:hidden;color:#0E1A1A;width:375px}
+  .header{background:#C94A2B;color:#F2E7CE;padding:0 16px;display:flex;align-items:center;gap:12px;justify-content:center;height:80px;overflow:hidden}
+  .logo{width:60px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:38px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))}
+  .brand{font-family:'Alfa Slab One',serif;font-size:22px;letter-spacing:0.02em;line-height:1;white-space:nowrap}
+  .row-top{padding:10px 14px 4px;display:flex;align-items:baseline;justify-content:space-between}
+  .h2{font-family:'Alfa Slab One',serif;font-size:17px;color:#1E4A3C}
+  .meta{font-family:'Oswald',sans-serif;font-size:11px;color:#6A7575;letter-spacing:0.08em;text-transform:uppercase}
+
+  /* List rows */
+  .list{padding:6px 10px 10px}
+  .row{margin-bottom:8px;border-radius:8px;background:#FFFCF4;overflow:hidden;border:2px solid #0E1A1A}
+  .row.open{border-color:#E9B63A;background:#FFF8DC}
+  .row.expanded{border-color:#C94A2B}
+
+  .row-btn{width:100%;padding:11px 14px;background:transparent;border:none;font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;color:#0E1A1A;display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-align:left}
+  .row.expanded .row-btn{color:#C94A2B}
+  .row-left{display:flex;flex-direction:column;gap:2px}
+  .row-date{font-size:14px;font-weight:600}
+  .row-sub{font-family:'Work Sans',sans-serif;font-size:11px;color:#6A7575;font-weight:400;letter-spacing:0.04em}
+  .row-right{display:flex;align-items:center;gap:8px}
+  .row-count{color:#6A7575;font-size:12px}
+  .row.expanded .row-count{color:#C94A2B}
+  .row.open .row-count{color:#0E1A1A;font-weight:700}
+  .chev{font-size:12px}
+
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;white-space:nowrap}
+  .pill-offen{background:#E9B63A;color:#0E1A1A;border:1px solid #0E1A1A}
+  .pill-zu{background:transparent;color:#1E4A3C;border:1px solid rgba(30,74,60,0.4)}
+
+  /* Detail table */
+  .detail{padding:0 12px 12px}
+  .detail table{width:100%;border-collapse:collapse;font-size:12px}
+  .detail .th{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;font-size:10px;color:#6A7575;font-weight:600}
+  .detail .name{font-family:'Oswald',sans-serif;font-weight:600;color:#0E1A1A}
+  .detail .terra{color:#C94A2B}
+  .lined{border-bottom:1px solid rgba(14,26,26,0.15)}
+
+  .bottomtabs{border-top:2px solid rgba(14,26,26,0.35);display:flex;background:#E8D9B5}
+  .bt{flex:1;text-align:center;padding:10px 4px;font-size:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;color:#3A4747}
+  .bt .ico{font-size:18px;margin-bottom:2px;display:block}
+  .bt.active{color:#C94A2B;font-weight:600;border-top:2px solid #C94A2B;margin-top:-2px}
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <div class="label">Spieltage — Status-Indikator (offen vs abgeschlossen)</div>
+  <div class="frame">
+    <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+
+    <div class="row-top">
+      <div class="h2">SPIELTAGE</div>
+      <div class="meta">13 Spieltage · 1 offen</div>
+    </div>
+
+    <div class="list">
+
+      <!-- ST 13 — OFFEN -->
+      <div class="row open">
+        <button class="row-btn">
+          <div class="row-left">
+            <span class="row-date">02.04.2026 · ST 13</span>
+            <span class="row-sub">Nächster Spieltag: 07.05.2026 — Nachrücker bestätigen</span>
+          </div>
+          <div class="row-right">
+            <span class="pill pill-offen">🕐 Offen</span>
+            <span class="row-count">8 Spieler ▶</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ST 12 — abgeschlossen -->
+      <div class="row">
+        <button class="row-btn">
+          <span class="row-date">05.03.2026 · ST 12</span>
+          <div class="row-right">
+            <span class="pill pill-zu">✓ Abgeschlossen</span>
+            <span class="row-count">8 Spieler ▶</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ST 11 — abgeschlossen + aufgeklappt -->
+      <div class="row expanded">
+        <button class="row-btn">
+          <span class="row-date">19.02.2026 · ST 11</span>
+          <div class="row-right">
+            <span class="pill pill-zu">✓ Abgeschlossen</span>
+            <span class="row-count">8 Spieler ▼</span>
+          </div>
+        </button>
+        <div class="detail">
+          <table>
+            <tr class="th">
+              <td style="padding:4px 2px;border-bottom:2px solid rgba(14,26,26,0.35)">Spieler</td>
+              <td style="padding:4px 2px;border-bottom:2px solid rgba(14,26,26,0.35);text-align:right">Gesamt</td>
+              <td style="padding:4px 2px;border-bottom:2px solid rgba(14,26,26,0.35);text-align:right">R1</td>
+              <td style="padding:4px 2px;border-bottom:2px solid rgba(14,26,26,0.35);text-align:right">R2</td>
+            </tr>
+            <tr class="terra"><td class="name lined" style="padding:5px 2px">Frank</td><td class="lined" style="padding:5px 2px;text-align:right;font-weight:600">70€</td><td class="lined" style="padding:5px 2px;text-align:right">20€</td><td class="lined" style="padding:5px 2px;text-align:right">50€</td></tr>
+            <tr><td class="name lined" style="padding:5px 2px">Werner</td><td class="lined" style="padding:5px 2px;text-align:right;font-weight:600">50€</td><td class="lined" style="padding:5px 2px;text-align:right">50€</td><td class="lined" style="padding:5px 2px;text-align:right">0€</td></tr>
+            <tr><td class="name lined" style="padding:5px 2px">Ciano</td><td class="lined" style="padding:5px 2px;text-align:right;font-weight:600">50€</td><td class="lined" style="padding:5px 2px;text-align:right">50€</td><td class="lined" style="padding:5px 2px;text-align:right">0€</td></tr>
+            <tr><td class="name lined" style="padding:5px 2px">Rainer</td><td class="lined" style="padding:5px 2px;text-align:right;font-weight:600">40€</td><td class="lined" style="padding:5px 2px;text-align:right">0€</td><td class="lined" style="padding:5px 2px;text-align:right">40€</td></tr>
+            <tr><td class="name lined" style="padding:5px 2px">Torben</td><td class="lined" style="padding:5px 2px;text-align:right;font-weight:600">40€</td><td class="lined" style="padding:5px 2px;text-align:right">40€</td><td class="lined" style="padding:5px 2px;text-align:right">0€</td></tr>
+            <tr><td class="name" style="padding:5px 2px">Jens</td><td style="padding:5px 2px;text-align:right;font-weight:600">20€</td><td style="padding:5px 2px;text-align:right">0€</td><td style="padding:5px 2px;text-align:right">20€</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ST 10 — abgeschlossen -->
+      <div class="row">
+        <button class="row-btn">
+          <span class="row-date">15.01.2026 · ST 10</span>
+          <div class="row-right">
+            <span class="pill pill-zu">✓ Abgeschlossen</span>
+            <span class="row-count">8 Spieler ▶</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ST 9 — abgeschlossen -->
+      <div class="row">
+        <button class="row-btn">
+          <span class="row-date">05.12.2025 · ST 9</span>
+          <div class="row-right">
+            <span class="pill pill-zu">✓ Abgeschlossen</span>
+            <span class="row-count">9 Spieler ▶</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ST 8 — abgeschlossen -->
+      <div class="row">
+        <button class="row-btn">
+          <span class="row-date">18.11.2025 · ST 8</span>
+          <div class="row-right">
+            <span class="pill pill-zu">✓ Abgeschlossen</span>
+            <span class="row-count">8 Spieler ▶</span>
+          </div>
+        </button>
+      </div>
+
+    </div>
+
+    <div class="bottomtabs">
+      <div class="bt"><span class="ico">📊</span>Ranking</div>
+      <div class="bt active"><span class="ico">📅</span>Spieltage</div>
+      <div class="bt"><span class="ico">👤</span>Spieler</div>
+      <div class="bt"><span class="ico">⚙️</span>Admin</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<h2>Windmill Poker — Status & nächster Schritt</h2>
+<p class="subtitle">Stand 2026-04-28 · Branch <code>master</code> · letzter Commit <code>f692799</code></p>
+
+<div class="section">
+  <span class="label">Phase 1 abgeschlossen</span>
+  <div class="pros-cons" style="margin-top:8px">
+    <div class="pros">
+      <h4>Design ✓</h4>
+      <ul>
+        <li>Spec: <code>docs/superpowers/specs/2026-04-27-poker-score-tracker-design.md</code></li>
+        <li>Tech-Stack: Next.js + Vercel + Supabase + Aloha-Sixty</li>
+        <li>4 Screens spezifiziert: Ranking, Spieltage, Profil, Admin</li>
+        <li>DB-Schema: 4 Tabellen + Moneylist-View</li>
+        <li>Mockups final unter <code>.superpowers/brainstorm/</code></li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Offene Punkte</h4>
+      <ul>
+        <li>Untracked Python-Skripte (8 Dateien) — committen?</li>
+        <li>Kein Next.js-Projekt initialisiert</li>
+        <li>Kein Supabase-Projekt aufgesetzt</li>
+        <li>Excel-Daten noch nicht importiert</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="label">Phase 2 — Backend-Fundament</span>
+  <h3 style="margin-top:8px">Supabase-Setup &amp; historischer Import</h3>
+  <p class="subtitle">In welcher Reihenfolge willst du vorgehen?</p>
+
+  <div class="options">
+    <div class="option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Strikt sequenziell (empfohlen)</h3>
+        <p>1. Supabase-Projekt erstellen → 2. Schema-Migration (SQL aus Spec) → 3. RLS-Policies → 4. Seed-Skript für 12 Spieltage aus <code>Windmill_Poker_results_test.xlsx</code> → 5. Verifikation via Moneylist-View</p>
+      </div>
+    </div>
+    <div class="option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Parallel: Schema + Next.js-Skeleton</h3>
+        <p>Supabase-Schema und Next.js-App-Init laufen parallel; Import als letzter Schritt, wenn Frontend bereits Daten lesen kann (visueller Smoke-Test)</p>
+      </div>
+    </div>
+    <div class="option" data-choice="c" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Erst lokal mit SQLite/JSON</h3>
+        <p>Komplette App lokal mit Mock-Daten bauen, Supabase-Anbindung erst ganz am Schluss — minimiert Cloud-Abhängigkeit während Entwicklung</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="subtitle">Klick eine Option oder antworte im Terminal. Default-Empfehlung: <strong>A</strong> — saubere Trennung, klare Verifikation.</p>
+</div>

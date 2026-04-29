@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Deckblatt v2 + Teilnehmer + Gallerie</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;600;700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;padding:32px 24px;background:#1a1a2e;font-family:'Work Sans',sans-serif;color:#F2E7CE}
+  .stack{display:flex;flex-direction:column;align-items:center;gap:32px}
+  .label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:12px;color:#E9B63A;font-weight:600;margin-bottom:8px;text-align:center}
+  .frame{position:relative;background:#F2E7CE;background-image:radial-gradient(rgba(14,26,26,.04) 1px,transparent 1px),radial-gradient(rgba(14,26,26,.03) 1px,transparent 1px);background-size:3px 3px,7px 7px;border-radius:14px;border:2px solid #0E1A1A;overflow:hidden;color:#0E1A1A;width:375px}
+  .header{background:#C94A2B;color:#F2E7CE;padding:0 16px;display:flex;align-items:center;gap:12px;justify-content:center;height:80px;overflow:hidden}
+  .logo{width:60px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:38px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))}
+  .brand{font-family:'Alfa Slab One',serif;font-size:22px;letter-spacing:0.02em;line-height:1;white-space:nowrap}
+  .bottomtabs{border-top:2px solid rgba(14,26,26,0.35);display:flex;background:#E8D9B5}
+  .bt{flex:1;text-align:center;padding:10px 4px;font-size:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;color:#3A4747}
+  .bt .ico{font-size:18px;margin-bottom:2px;display:block}
+  .bt.active{color:#C94A2B;font-weight:600;border-top:2px solid #C94A2B;margin-top:-2px}
+  .backrow{display:flex;align-items:center;gap:10px;margin:6px 10px 4px;padding:8px 10px;border:2px solid #0E1A1A;border-radius:6px;background:#F2E7CE;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.08em;font-size:11px;font-weight:600;color:#1E4A3C}
+
+  /* Hero */
+  .hero{margin:24px 18px 14px;padding:22px 18px 20px;background:#1E4A3C;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:14px;text-align:center;box-shadow:0 4px 0 rgba(14,26,26,0.25)}
+  .hero-label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:11px;color:#E9B63A;font-weight:600;margin-bottom:6px}
+  .hero-date{font-family:'Alfa Slab One',serif;font-size:30px;line-height:1;letter-spacing:0.02em;margin-bottom:4px;color:#F2E7CE}
+  .hero-time{font-family:'Oswald',sans-serif;font-size:13px;color:#E9B63A;letter-spacing:0.1em;margin-bottom:14px}
+  .countdown{display:flex;justify-content:center;gap:14px;margin-top:6px}
+  .cd-block{display:flex;flex-direction:column;align-items:center;min-width:50px}
+  .cd-num{font-family:'Alfa Slab One',serif;font-size:28px;line-height:1;color:#F2E7CE}
+  .cd-unit{font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.16em;color:#E9B63A;margin-top:4px}
+  .cd-sep{font-family:'Alfa Slab One',serif;font-size:24px;color:rgba(242,231,206,0.4);align-self:center;line-height:1}
+
+  /* Teilnehmer button on cover */
+  .big-btn{display:flex;align-items:center;justify-content:space-between;margin:0 18px 14px;padding:14px 18px;background:rgba(255,255,255,0.5);border:2px solid #0E1A1A;border-radius:12px;cursor:pointer;font-family:'Oswald',sans-serif}
+  .big-btn-left{display:flex;align-items:center;gap:12px}
+  .big-btn .ic{font-size:22px;line-height:1}
+  .big-btn-text{font-size:14px;font-weight:700;color:#0E1A1A;text-transform:uppercase;letter-spacing:0.12em}
+  .big-btn-sub{font-size:11px;color:#6A7575;font-weight:400;letter-spacing:0.05em;text-transform:none;margin-top:2px}
+  .big-btn-arrow{font-family:'Oswald',sans-serif;font-size:22px;color:#6A7575}
+
+  /* Gallerie FAB on cover */
+  .fab-row{display:flex;justify-content:flex-end;padding:0 18px 16px}
+  .fab{display:flex;align-items:center;gap:8px;padding:10px 16px 10px 14px;background:#C94A2B;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:24px;cursor:pointer;box-shadow:0 3px 0 rgba(14,26,26,0.25);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;font-weight:600;text-decoration:none}
+  .fab .ic{font-size:18px;line-height:1}
+
+  /* Teilnehmer list */
+  .row-top{padding:8px 14px 4px;display:flex;align-items:baseline;justify-content:space-between}
+  .h2{font-family:'Alfa Slab One',serif;font-size:17px;color:#1E4A3C}
+  .meta{font-family:'Oswald',sans-serif;font-size:12px;color:#6A7575;letter-spacing:0.08em}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  .name{font-family:'Oswald',sans-serif;font-weight:600}
+  .num-os{font-family:'Oswald',sans-serif}
+  .lined{border-bottom:1px solid rgba(14,26,26,0.12)}
+  .pos{display:inline-block;background:#1E4A3C;color:#F2E7CE;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;margin-right:10px;vertical-align:middle}
+  .pos-wait{background:#E8D9B5;color:#0E1A1A;border:1px solid rgba(14,26,26,0.4)}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+  .pill-promo{background:#E9B63A;color:#0E1A1A}
+  .pill-wait{background:rgba(201,74,43,0.12);color:#C94A2B;border:1px solid rgba(201,74,43,0.4)}
+
+  /* Gallerie */
+  .gallerie-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px}
+  .gallerie-title{font-family:'Alfa Slab One',serif;font-size:17px;color:#1E4A3C}
+  .gallerie-meta{font-family:'Oswald',sans-serif;font-size:11px;color:#6A7575;letter-spacing:0.08em}
+  .cam-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#C94A2B;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:24px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;font-weight:600;cursor:pointer}
+  .cam-btn .ic{font-size:18px;line-height:1}
+  .gallerie-admin-note{margin:6px 14px 0;font-size:10px;color:#6A7575;font-style:italic;line-height:1.4}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 14px 14px}
+  .tile{aspect-ratio:1/1;border:2px solid #0E1A1A;border-radius:8px;overflow:hidden}
+  .tile-1{background:linear-gradient(135deg,#C94A2B,#8B3520)}
+  .tile-2{background:linear-gradient(135deg,#1E4A3C,#0E2A22)}
+  .tile-3{background:linear-gradient(135deg,#E9B63A,#A87B16)}
+  .tile-4{background:linear-gradient(135deg,#2A6A6A,#173838)}
+  .tile-5{background:linear-gradient(135deg,#8B3520,#5A2010)}
+  .tile-6{background:linear-gradient(135deg,#A87B16,#5C4408)}
+
+  /* Foto-Detail */
+  .photo-frame{margin:8px 14px;aspect-ratio:1/1;border:2px solid #0E1A1A;border-radius:12px;background:linear-gradient(135deg,#1E4A3C,#0E2A22);position:relative;overflow:hidden;display:flex;align-items:flex-end}
+  .photo-bedge{position:absolute;top:10px;right:10px;background:rgba(14,26,26,0.6);color:#F2E7CE;padding:4px 10px;border-radius:12px;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;font-weight:600}
+  .comment-card{margin:8px 14px;padding:12px 14px;background:rgba(255,255,255,0.55);border:2px solid #0E1A1A;border-radius:10px}
+  .comment-label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:10px;color:#6A7575;font-weight:600;margin-bottom:4px}
+  .comment-text{font-family:'Work Sans',sans-serif;font-size:14px;color:#0E1A1A;font-weight:500;line-height:1.4}
+  .comment-edit{margin-top:8px;display:flex;justify-content:flex-end}
+  .edit-btn{padding:6px 12px;background:transparent;color:#1E4A3C;border:2px solid #1E4A3C;border-radius:6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;font-size:10px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <!-- ===== Mockup 1: Deckblatt ===== -->
+  <div>
+    <div class="label">1 / 4 — Deckblatt (Startseite, Teilnehmer-Button + Gallerie)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+
+      <div class="hero">
+        <div class="hero-label">Nächster Spieltag</div>
+        <div class="hero-date">07.05.2026</div>
+        <div class="hero-time">Donnerstag · 19:15 Uhr</div>
+        <div class="countdown">
+          <div class="cd-block"><div class="cd-num">7</div><div class="cd-unit">Tage</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-block"><div class="cd-num">19</div><div class="cd-unit">Std</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-block"><div class="cd-num">32</div><div class="cd-unit">Min</div></div>
+        </div>
+      </div>
+
+      <!-- NEW: Teilnehmer-Button -->
+      <div class="big-btn">
+        <div class="big-btn-left">
+          <span class="ic">👥</span>
+          <div>
+            <div class="big-btn-text">Teilnehmer</div>
+            <div class="big-btn-sub">8 angemeldet · 3 auf Warteliste</div>
+          </div>
+        </div>
+        <span class="big-btn-arrow">›</span>
+      </div>
+
+      <div class="fab-row">
+        <a class="fab"><span class="ic">📷</span><span>Gallerie</span></a>
+      </div>
+
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 2: Teilnehmer ===== -->
+  <div>
+    <div class="label">2 / 4 — Teilnehmer (8 angemeldet/aufgerückt + 3 Warteliste auf Plätzen 9–11)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="backrow">
+        <span style="font-size:16px;line-height:1">←</span>
+        <span style="flex:1">Zurück: Deckblatt</span>
+      </div>
+      <div class="row-top">
+        <div class="h2">TEILNEHMER</div>
+        <div class="meta">07.05.2026</div>
+      </div>
+
+      <div style="padding:0 14px 4px">
+        <table>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">1</span>Frank</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">2</span>Peter</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">3</span>Friedl</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">4</span>Jörg</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">5</span>Rainer</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">6</span>Jochen</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">7</span>Ciano</td><td class="lined"></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos">8</span>Werner</td><td class="lined"></td></tr>
+        </table>
+      </div>
+
+      <div style="padding:8px 14px 0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:11px;color:#C94A2B;font-weight:600">Warteliste</div>
+          <div style="font-size:10px;color:#6A7575;font-style:italic">Plätze 9–11</div>
+        </div>
+        <table>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos pos-wait">9</span>Torben</td><td style="padding:8px 0;text-align:right" class="lined"><span class="pill pill-wait">Rang 1</span></td></tr>
+          <tr><td style="padding:8px 0" class="name lined"><span class="pos pos-wait">10</span>Jens</td><td style="padding:8px 0;text-align:right" class="lined"><span class="pill pill-wait">Rang 2</span></td></tr>
+          <tr><td style="padding:8px 0" class="name"><span class="pos pos-wait">11</span>Martin</td><td style="padding:8px 0;text-align:right"><span class="pill pill-wait">Rang 3</span></td></tr>
+        </table>
+      </div>
+
+      <div style="padding:14px"></div>
+
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 3: Gallerie ===== -->
+  <div>
+    <div class="label">3 / 4 — Gallerie (Foto-Grid · Kamera-Button öffnet iPhone-Kamera für Admin)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="backrow">
+        <span style="font-size:16px;line-height:1">←</span>
+        <span style="flex:1">Zurück: Deckblatt</span>
+      </div>
+      <div class="gallerie-toolbar">
+        <div>
+          <div class="gallerie-title">GALLERIE</div>
+          <div class="gallerie-meta" style="text-transform:uppercase">47 Fotos</div>
+        </div>
+        <button class="cam-btn"><span class="ic">📸</span>Kamera</button>
+      </div>
+      <div class="gallerie-admin-note">Kamera-Button nur für Admin sichtbar. Öffnet die iPhone-Kamera. Nach dem Auslösen erscheint das Foto hier.</div>
+
+      <div class="grid">
+        <div class="tile tile-1"></div>
+        <div class="tile tile-2"></div>
+        <div class="tile tile-3"></div>
+        <div class="tile tile-4"></div>
+        <div class="tile tile-5"></div>
+        <div class="tile tile-6"></div>
+        <div class="tile tile-2"></div>
+        <div class="tile tile-3"></div>
+        <div class="tile tile-1"></div>
+        <div class="tile tile-6"></div>
+        <div class="tile tile-4"></div>
+        <div class="tile tile-5"></div>
+      </div>
+
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 4: Foto-Detail mit Kommentar ===== -->
+  <div>
+    <div class="label">4 / 4 — Foto-Detail mit Kommentar (Admin kann editieren)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="backrow">
+        <span style="font-size:16px;line-height:1">←</span>
+        <span style="flex:1">Zurück: Gallerie</span>
+      </div>
+
+      <div class="photo-frame">
+        <div class="photo-bedge">📷 Foto</div>
+      </div>
+
+      <div class="comment-card">
+        <div class="comment-label">Kommentar</div>
+        <div class="comment-text">AA888 wird von 8888 geschlagen.</div>
+        <div class="comment-edit">
+          <button class="edit-btn">✎ Bearbeiten</button>
+        </div>
+      </div>
+
+      <div style="margin:0 14px 14px;font-size:10px;color:#6A7575;font-style:italic;line-height:1.4">Bearbeiten/Löschen nur für Admin. Leser sehen Foto + Kommentar.</div>
+
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

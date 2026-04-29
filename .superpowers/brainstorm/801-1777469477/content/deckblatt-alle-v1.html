@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Deckblatt + Gallerie</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;600;700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;padding:32px 24px;background:#1a1a2e;font-family:'Work Sans',sans-serif;color:#F2E7CE}
+  .stack{display:flex;flex-direction:column;align-items:center;gap:32px}
+  .label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:12px;color:#E9B63A;font-weight:600;margin-bottom:8px;text-align:center}
+  .frame{position:relative;background:#F2E7CE;background-image:radial-gradient(rgba(14,26,26,.04) 1px,transparent 1px),radial-gradient(rgba(14,26,26,.03) 1px,transparent 1px);background-size:3px 3px,7px 7px;border-radius:14px;border:2px solid #0E1A1A;overflow:hidden;color:#0E1A1A;width:375px}
+  .header{background:#C94A2B;color:#F2E7CE;padding:0 16px;display:flex;align-items:center;gap:12px;justify-content:center;height:80px;overflow:hidden}
+  .logo{width:60px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:38px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))}
+  .brand{font-family:'Alfa Slab One',serif;font-size:22px;letter-spacing:0.02em;line-height:1;white-space:nowrap}
+  .bottomtabs{border-top:2px solid rgba(14,26,26,0.35);display:flex;background:#E8D9B5}
+  .bt{flex:1;text-align:center;padding:10px 4px;font-size:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;color:#3A4747}
+  .bt .ico{font-size:18px;margin-bottom:2px;display:block}
+  .bt.active{color:#C94A2B;font-weight:600;border-top:2px solid #C94A2B;margin-top:-2px}
+
+  /* Hero "next gameday" card */
+  .hero{margin:24px 18px 16px;padding:22px 18px 20px;background:#1E4A3C;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:14px;text-align:center;box-shadow:0 4px 0 rgba(14,26,26,0.25)}
+  .hero-label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:11px;color:#E9B63A;font-weight:600;margin-bottom:6px}
+  .hero-date{font-family:'Alfa Slab One',serif;font-size:30px;line-height:1;letter-spacing:0.02em;margin-bottom:4px;color:#F2E7CE}
+  .hero-time{font-family:'Oswald',sans-serif;font-size:13px;color:#E9B63A;letter-spacing:0.1em;margin-bottom:14px}
+  .countdown{display:flex;justify-content:center;gap:14px;margin-top:6px}
+  .cd-block{display:flex;flex-direction:column;align-items:center;min-width:50px}
+  .cd-num{font-family:'Alfa Slab One',serif;font-size:28px;line-height:1;color:#F2E7CE}
+  .cd-unit{font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.16em;color:#E9B63A;margin-top:4px}
+  .cd-sep{font-family:'Alfa Slab One',serif;font-size:24px;color:rgba(242,231,206,0.4);align-self:center;line-height:1}
+
+  /* Highlights */
+  .highlight{margin:0 18px 14px;padding:10px 14px;background:rgba(255,255,255,0.5);border:2px solid #0E1A1A;border-radius:10px;display:flex;align-items:center;justify-content:space-between}
+  .highlight-label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:10px;color:#6A7575;font-weight:600}
+  .highlight-row{display:flex;align-items:baseline;gap:8px;margin-top:2px}
+  .highlight-name{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;color:#0E1A1A}
+  .highlight-amount{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;color:#C94A2B}
+
+  /* Gallerie FAB */
+  .fab-row{display:flex;justify-content:flex-end;padding:0 18px 16px}
+  .fab{display:flex;align-items:center;gap:8px;padding:10px 16px 10px 14px;background:#C94A2B;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:24px;cursor:pointer;box-shadow:0 3px 0 rgba(14,26,26,0.25);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;font-weight:600;text-decoration:none}
+  .fab .ic{font-size:18px;line-height:1}
+
+  /* Gallerie sub-screen */
+  .backrow{display:flex;align-items:center;gap:10px;margin:6px 10px 4px;padding:8px 10px;border:2px solid #0E1A1A;border-radius:6px;background:#F2E7CE;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.08em;font-size:11px;font-weight:600;color:#1E4A3C}
+  .gallerie-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px}
+  .gallerie-title{font-family:'Alfa Slab One',serif;font-size:17px;color:#1E4A3C}
+  .gallerie-meta{font-family:'Oswald',sans-serif;font-size:11px;color:#6A7575;letter-spacing:0.08em}
+  .upload-btn{padding:8px 12px;background:#1E4A3C;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 14px 14px}
+  .tile{aspect-ratio:1/1;border:2px solid #0E1A1A;border-radius:8px;display:flex;align-items:flex-end;justify-content:flex-start;padding:6px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;color:#F2E7CE;text-shadow:0 1px 2px rgba(0,0,0,0.6);overflow:hidden;position:relative}
+  .tile-1{background:linear-gradient(135deg,#C94A2B,#8B3520)}
+  .tile-2{background:linear-gradient(135deg,#1E4A3C,#0E2A22)}
+  .tile-3{background:linear-gradient(135deg,#E9B63A,#A87B16)}
+  .tile-4{background:linear-gradient(135deg,#2A6A6A,#173838)}
+  .tile-5{background:linear-gradient(135deg,#8B3520,#5A2010)}
+  .tile-6{background:linear-gradient(135deg,#A87B16,#5C4408)}
+  .tile-cnt{position:absolute;top:6px;right:8px;font-family:'Oswald',sans-serif;font-size:9px;background:rgba(14,26,26,0.6);padding:2px 6px;border-radius:8px;color:#F2E7CE}
+  .gallerie-admin-note{margin:6px 14px 0;font-size:10px;color:#6A7575;font-style:italic;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <!-- ===== Mockup 1: Deckblatt (Startseite) ===== -->
+  <div>
+    <div class="label">1 / 2 — Deckblatt (Startseite beim Öffnen der App)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+
+      <!-- Hero: Next gameday + countdown -->
+      <div class="hero">
+        <div class="hero-label">Nächster Spieltag</div>
+        <div class="hero-date">07.05.2026</div>
+        <div class="hero-time">Donnerstag · 19:15 Uhr</div>
+        <div class="countdown">
+          <div class="cd-block"><div class="cd-num">7</div><div class="cd-unit">Tage</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-block"><div class="cd-num">19</div><div class="cd-unit">Std</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-block"><div class="cd-num">32</div><div class="cd-unit">Min</div></div>
+        </div>
+      </div>
+
+      <!-- Highlight: last gameday winner -->
+      <div class="highlight">
+        <div>
+          <div class="highlight-label">Letzter Spieltag · 02.04.2026</div>
+          <div class="highlight-row">
+            <span class="highlight-name">🏆 Frank</span>
+            <span class="highlight-amount">+280€</span>
+          </div>
+        </div>
+        <span style="font-family:'Oswald',sans-serif;font-size:18px;color:#6A7575">›</span>
+      </div>
+
+      <!-- Gallerie FAB (bottom right) -->
+      <div class="fab-row">
+        <a class="fab"><span class="ic">📷</span><span>Gallerie</span></a>
+      </div>
+
+      <!-- Bottom tabs (none active — wir sind auf Deckblatt) -->
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 2: Gallerie (per FAB erreichbar) ===== -->
+  <div>
+    <div class="label">2 / 2 — Gallerie (Foto-Grid · Admin kann hochladen)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+
+      <div class="backrow">
+        <span style="font-size:16px;line-height:1">←</span>
+        <span style="flex:1">Zurück: Deckblatt</span>
+      </div>
+
+      <div class="gallerie-toolbar">
+        <div>
+          <div class="gallerie-title">GALLERIE</div>
+          <div class="gallerie-meta" style="text-transform:uppercase">12 Spieltage · 47 Fotos</div>
+        </div>
+        <button class="upload-btn">+ Foto</button>
+      </div>
+      <div class="gallerie-admin-note">Hochladen nur für Admin sichtbar. Leser sehen nur das Grid.</div>
+
+      <div class="grid">
+        <div class="tile tile-1"><span class="tile-cnt">5</span>ST 13 · 02.04.</div>
+        <div class="tile tile-2"><span class="tile-cnt">4</span>ST 13 · 02.04.</div>
+        <div class="tile tile-3"><span class="tile-cnt">3</span>ST 13 · 02.04.</div>
+
+        <div class="tile tile-4"><span class="tile-cnt">6</span>ST 12 · 05.03.</div>
+        <div class="tile tile-5"><span class="tile-cnt">2</span>ST 12 · 05.03.</div>
+        <div class="tile tile-6"><span class="tile-cnt">4</span>ST 12 · 05.03.</div>
+
+        <div class="tile tile-2"><span class="tile-cnt">5</span>ST 11 · 06.02.</div>
+        <div class="tile tile-3"><span class="tile-cnt">3</span>ST 11 · 06.02.</div>
+        <div class="tile tile-1"><span class="tile-cnt">7</span>ST 11 · 06.02.</div>
+
+        <div class="tile tile-6"><span class="tile-cnt">2</span>ST 10 · 09.01.</div>
+        <div class="tile tile-4"><span class="tile-cnt">4</span>ST 10 · 09.01.</div>
+        <div class="tile tile-5"><span class="tile-cnt">2</span>ST 10 · 09.01.</div>
+      </div>
+
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

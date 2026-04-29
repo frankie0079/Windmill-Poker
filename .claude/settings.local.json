@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(netstat -ano)",
+      "Bash(/c/DEV/sandbox/superpowers-framework/skills/brainstorming/scripts/start-server.sh *)",
+      "Bash(/c/DEV/sandbox/superpowers-framework/skills/brainstorming/scripts/stop-server.sh *)",
+      "Skill(update-config)",
+      "Bash(chmod +x /c/DEV/sandbox/Superpowers-Trial_one/.claude/session-start.sh)",
+      "Bash(/c/DEV/sandbox/Superpowers-Trial_one/.claude/session-start.sh)",
+      "Bash(echo \"---EXIT: $?---\")",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(curl -v -m 2 \"http://localhost:50727/\")",
+      "Bash(curl -v -m 2 \"http://127.0.0.1:50727/\")",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Get-CimInstance *)",
+      "Bash(curl -sf -m 1 \"http://localhost:50727/\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['hookSpecificOutput']['additionalContext'][:400]\\)\")",
+      "Bash(python *)",
+      "Read(//c/DEV/sandbox/superpowers-framework/skills/brainstorming//**)",
+      "Read(//c/DEV/sandbox/superpowers-framework/skills/brainstorming/**)",
+      "Bash(curl -s -o /dev/null -w \"root: %{http_code}\\\\n\" http://localhost:54677/)",
+      "Bash(curl -s -o /dev/null -w \"named: %{http_code}\\\\n\" http://localhost:54677/admin-alle.html)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
