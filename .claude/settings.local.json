@@ -32,7 +32,10 @@
       "PowerShell(supabase init *)",
       "PowerShell(supabase migration *)",
       "PowerShell(Start-Process -FilePath \"C:\\\\DEV\\\\sandbox\\\\Superpowers-Trial_one\\\\setup-supabase.bat\")",
-      "PowerShell(supabase db *)"
+      "PowerShell(supabase db *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/ -o /tmp/p.html)",
+      "Read(//tmp/**)"
     ]
   },
   "hooks": {

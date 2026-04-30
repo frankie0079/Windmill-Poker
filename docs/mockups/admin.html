@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin v3 – Eingabe / Nächster Spieltag / Spielerverwaltung</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@400;600;700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;padding:32px 24px;background:#1a1a2e;font-family:'Work Sans',sans-serif;color:#F2E7CE}
+  .stack{display:flex;flex-direction:column;align-items:center;gap:32px}
+  .label{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.18em;font-size:12px;color:#E9B63A;font-weight:600;margin-bottom:8px;text-align:center}
+  .frame{background:#F2E7CE;background-image:radial-gradient(rgba(14,26,26,.04) 1px,transparent 1px),radial-gradient(rgba(14,26,26,.03) 1px,transparent 1px);background-size:3px 3px,7px 7px;border-radius:14px;border:2px solid #0E1A1A;overflow:hidden;color:#0E1A1A;width:375px}
+  .header{background:#C94A2B;color:#F2E7CE;padding:0 16px;display:flex;align-items:center;gap:12px;justify-content:center;height:80px;overflow:hidden}
+  .logo{width:60px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Alfa Slab One',serif;font-size:38px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))}
+  .brand{font-family:'Alfa Slab One',serif;font-size:22px;letter-spacing:0.02em;line-height:1;white-space:nowrap}
+  .subtabs{display:flex;margin:6px 10px 4px;border:2px solid #0E1A1A;border-radius:6px;overflow:hidden;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.06em;font-size:11px;font-weight:600}
+  .subtab{flex:1;padding:8px 4px;text-align:center;color:#3A4747;border-left:1px solid #0E1A1A;background:#F2E7CE}
+  .subtab:first-child{border-left:none}
+  .subtab.active{background:#1E4A3C;color:#F2E7CE}
+  .backrow{display:flex;align-items:center;gap:10px;margin:6px 10px 4px;padding:8px 10px;border:2px solid #0E1A1A;border-radius:6px;background:#F2E7CE;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.08em;font-size:11px;font-weight:600;color:#1E4A3C}
+  .backrow .arrow{font-size:16px;line-height:1}
+  .h2{font-family:'Alfa Slab One',serif;font-size:17px;color:#1E4A3C}
+  .meta{font-family:'Oswald',sans-serif;font-size:12px;color:#6A7575;letter-spacing:0.08em}
+  .row-top{padding:8px 14px 4px;display:flex;align-items:baseline;justify-content:space-between}
+  .bottomtabs{border-top:2px solid rgba(14,26,26,0.35);display:flex;background:#E8D9B5}
+  .bt{flex:1;text-align:center;padding:10px 4px;font-size:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;color:#3A4747}
+  .bt .ico{font-size:18px;margin-bottom:2px;display:block}
+  .bt.active{color:#C94A2B;font-weight:600;border-top:2px solid #C94A2B;margin-top:-2px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  .th{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:10px;color:#6A7575;font-weight:600}
+  .name{font-family:'Oswald',sans-serif;font-weight:600}
+  .num-os{font-family:'Oswald',sans-serif}
+  .terra{color:#C94A2B}
+  .muted{color:#6A7575}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-family:'Oswald',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+  .pill-ok{background:#1E4A3C;color:#F2E7CE}
+  .pill-out{background:rgba(201,74,43,0.15);color:#C94A2B;border:1px solid #C94A2B}
+  .pill-promo{background:#E9B63A;color:#0E1A1A}
+  .toggle{display:inline-block;width:34px;height:18px;border-radius:9px;position:relative;vertical-align:middle}
+  .toggle .knob{position:absolute;top:2px;width:14px;height:14px;background:#F2E7CE;border-radius:50%}
+  .toggle.on{background:#1E4A3C} .toggle.on .knob{right:2px}
+  .toggle.off{background:#C9C0AC} .toggle.off .knob{left:2px}
+  .rank-badge{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;margin-right:8px;vertical-align:middle}
+  .rank-1{background:#C94A2B;color:#F2E7CE}
+  .rank-x{background:#E8D9B5;color:#0E1A1A}
+  select,input[type=text]{font-family:'Oswald',sans-serif;background:#F2E7CE;color:#0E1A1A;border:2px solid #0E1A1A;border-radius:6px;outline:none}
+  .save-btn{width:100%;padding:13px;background:#1E4A3C;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:8px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.14em;font-size:13px;font-weight:600;cursor:pointer}
+  .secondary-btn{width:100%;padding:11px;background:transparent;color:#1E4A3C;border:2px solid #1E4A3C;border-radius:8px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px}
+  .lined{border-bottom:1px solid rgba(14,26,26,0.12)}
+  .dashed{border-top:1px dashed rgba(14,26,26,0.12)}
+  .trash{color:#C94A2B;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <!-- ===== Mockup 1: Eingabe Spieltag ===== -->
+  <div>
+    <div class="label">1 / 3 — Eingabe Spieltag (Standardansicht)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="subtabs">
+        <div class="subtab active">Eingabe Spieltag</div>
+        <div class="subtab">Nächster Spieltag</div>
+      </div>
+      <div class="row-top">
+        <div class="h2">SPIELTAG ERFASSEN</div>
+        <div class="meta">ST 13 · 02.04.2026</div>
+      </div>
+      <div style="display:flex;margin:6px 14px;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;font-size:12px;border-bottom:2px solid rgba(14,26,26,0.2)">
+        <div style="padding:6px 12px;color:#6A7575">1. Runde ✓</div>
+        <div style="padding:6px 12px;border-bottom:3px solid #C94A2B;color:#C94A2B;margin-bottom:-2px">2. Runde</div>
+      </div>
+      <div style="padding:6px 14px 4px">
+        <table>
+          <tr class="th"><td style="padding:5px 0;border-bottom:1px solid rgba(14,26,26,0.25)">Spieler</td><td style="padding:5px 0;border-bottom:1px solid rgba(14,26,26,0.25);text-align:right">Auszahlung</td></tr>
+          <tr><td style="padding:7px 0" class="name">Frank</td><td style="padding:7px 0;text-align:right" class="num-os terra"><strong style="font-size:14px">80€</strong></td></tr>
+          <tr><td style="padding:7px 0" class="name dashed">Peter</td><td style="padding:7px 0;text-align:right" class="num-os terra dashed"><strong style="font-size:14px">60€</strong></td></tr>
+          <tr><td style="padding:7px 0" class="name dashed">Friedl</td><td style="padding:7px 0;text-align:right" class="num-os dashed"><strong>6,66€</strong></td></tr>
+          <tr><td style="padding:7px 0" class="name dashed">Jörg</td><td style="padding:7px 0;text-align:right" class="num-os dashed"><strong>6,66€</strong></td></tr>
+          <tr><td style="padding:7px 0" class="name dashed">Rainer</td><td style="padding:7px 0;text-align:right" class="num-os dashed"><strong>6,66€</strong></td></tr>
+          <tr><td style="padding:7px 0" class="name dashed muted">Jochen</td><td style="padding:7px 0;text-align:right" class="num-os dashed muted">0€</td></tr>
+          <tr><td style="padding:7px 0" class="name dashed muted">Torben</td><td style="padding:7px 0;text-align:right" class="num-os dashed muted">0€</td></tr>
+          <tr><td style="padding:7px 0" class="name dashed muted">Ciano</td><td style="padding:7px 0;text-align:right" class="num-os dashed muted">0€</td></tr>
+        </table>
+      </div>
+      <div style="margin:8px 14px 6px;padding:10px 12px;background:rgba(30,74,60,0.10);border:2px solid #1E4A3C;border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:11px;color:#1E4A3C;font-weight:600">Pott-Check</span>
+          <span style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#1E4A3C">✓ OK</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:12px"><span>Summe Auszahlung</span><span style="font-weight:600">159,98€</span></div>
+        <div style="display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:12px"><span>Soll (8 × 20€)</span><span style="font-weight:600">160,00€</span></div>
+        <div style="display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:12px;color:#1E4A3C;margin-top:2px;padding-top:4px;border-top:1px dashed rgba(30,74,60,0.4)"><span>Differenz</span><span style="font-weight:700">−0,02€ <span style="font-size:10px;color:#6A7575;font-weight:400">(innerhalb ±2¢)</span></span></div>
+      </div>
+      <div style="margin:0 14px 8px;font-size:11px;color:#6A7575;line-height:1.4;font-style:italic">Toleranz bis ±2 Cent erlaubt geteilte Plätze (z.B. 3× 6,66€ statt 20€).</div>
+      <div style="padding:6px 14px 14px"><button class="save-btn">Spieltag speichern</button></div>
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt active"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 2: Nächster Spieltag ===== -->
+  <div>
+    <div class="label">2 / 3 — Nächster Spieltag (Spielerverwaltung als Button unten)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="subtabs">
+        <div class="subtab">Eingabe Spieltag</div>
+        <div class="subtab active">Nächster Spieltag</div>
+      </div>
+      <div class="row-top">
+        <div class="h2">NÄCHSTER SPIELTAG</div>
+        <div class="meta">ST 13 → ST 14</div>
+      </div>
+      <div style="margin:6px 14px 6px;padding:10px 12px;background:rgba(255,255,255,0.4);border:2px solid #0E1A1A;border-radius:8px">
+        <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:10px;color:#6A7575;font-weight:600;margin-bottom:4px">Datum</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">📅</span>
+          <input type="text" value="07.05.2026" style="flex:1;padding:6px 8px;font-size:14px;font-weight:600">
+          <span style="font-family:'Oswald',sans-serif;font-size:11px;color:#6A7575">19:15</span>
+        </div>
+      </div>
+      <div style="padding:0 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:11px;color:#1E4A3C;font-weight:600">Teilnehmer ST 13</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:11px;color:#6A7575">7 dabei · 1 abgesagt</div>
+        </div>
+        <table>
+          <tr><td style="padding:7px 0" class="name lined">Frank</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Peter</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Friedl</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Jörg</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Rainer</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Jochen</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+          <tr><td style="padding:7px 0;text-decoration:line-through" class="name lined muted">Torben</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-out">✗ Abgesagt</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined">Ciano</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-ok">✓ Dabei</span></td></tr>
+        </table>
+      </div>
+      <div style="padding:8px 14px 4px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;margin-top:6px">
+          <div style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:11px;color:#C94A2B;font-weight:600">Warteliste</div>
+          <div style="font-size:10px;color:#6A7575;font-style:italic">Rang manuell wählen</div>
+        </div>
+        <table>
+          <tr><td style="padding:7px 0" class="name lined"><span class="rank-badge rank-1">1</span>Werner</td><td style="padding:7px 0;text-align:right" class="lined"><span class="pill pill-promo">↑ rückt nach</span></td></tr>
+          <tr><td style="padding:7px 0" class="name lined"><span class="rank-badge rank-x">2</span>Jens</td><td style="padding:7px 0;text-align:right" class="lined"><select style="padding:4px 8px;font-size:11px"><option>Rang 1</option><option selected>Rang 2</option><option>Rang 3</option></select></td></tr>
+          <tr><td style="padding:7px 0" class="name"><span class="rank-badge rank-x">3</span>Martin</td><td style="padding:7px 0;text-align:right"><select style="padding:4px 8px;font-size:11px"><option>Rang 1</option><option>Rang 2</option><option selected>Rang 3</option></select></td></tr>
+        </table>
+      </div>
+      <div style="margin:8px 14px 6px;padding:10px 12px;background:rgba(30,74,60,0.10);border:2px solid #1E4A3C;border-radius:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.12em;font-size:11px;color:#1E4A3C;font-weight:600">Status</span>
+          <span style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#1E4A3C">✓ Bereit</span>
+        </div>
+        <div style="font-size:11px;color:#3A4747;margin-top:3px">8 bestätigt für 07.05.2026 (Werner ist für Torben nachgerückt).</div>
+      </div>
+      <div style="padding:6px 14px 14px">
+        <button class="save-btn">Spieltag abschließen</button>
+        <button class="secondary-btn">⚙ Spielerverwaltung</button>
+      </div>
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt active"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Mockup 3: Spielerverwaltung (Sub-Screen) ===== -->
+  <div>
+    <div class="label">3 / 3 — Spielerverwaltung (per Button erreichbar, selten gebraucht)</div>
+    <div class="frame">
+      <div class="header"><div class="logo">♠</div><span class="brand">WINDMILL POKER</span></div>
+      <div class="backrow">
+        <span class="arrow">←</span>
+        <span style="flex:1">Zurück: Nächster Spieltag</span>
+      </div>
+      <div style="padding:8px 14px 2px">
+        <div class="h2">SPIELERVERWALTUNG</div>
+        <div class="meta" style="text-transform:uppercase">11 Spieler · 10 aktiv · 1 inaktiv</div>
+        <div style="font-size:11px;color:#3A4747;margin-top:4px;line-height:1.4">Inaktive Spieler erscheinen nicht in Rankings/Statistiken. Reaktivieren stellt Daten wieder her.</div>
+      </div>
+      <div style="margin:8px 14px 4px;padding:10px;border:2px dashed rgba(14,26,26,0.35);border-radius:8px;display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.3)">
+        <input type="text" placeholder="Neuer Spielername" style="flex:1;padding:8px 10px;font-size:13px">
+        <button style="padding:8px 14px;background:#1E4A3C;color:#F2E7CE;border:2px solid #0E1A1A;border-radius:6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.1em;font-size:11px;font-weight:600;cursor:pointer">+ Anlegen</button>
+      </div>
+      <div style="padding:4px 14px 14px">
+        <table>
+          <tr class="th">
+            <td style="padding:5px 0;border-bottom:2px solid rgba(14,26,26,0.35)">Spieler</td>
+            <td style="padding:5px 0;border-bottom:2px solid rgba(14,26,26,0.35);text-align:center">Status</td>
+            <td style="padding:5px 0;border-bottom:2px solid rgba(14,26,26,0.35);text-align:right">ST</td>
+            <td style="padding:5px 0;border-bottom:2px solid rgba(14,26,26,0.35);text-align:right;width:32px"></td>
+          </tr>
+          <tr><td class="name lined" style="padding:8px 0">Frank</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">12</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Peter</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">12</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Friedl</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">10</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Werner</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">10</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Rainer</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">9</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Jochen</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">9</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Torben</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">6</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr style="opacity:0.55"><td class="name lined" style="padding:8px 0;text-decoration:line-through">Jörg</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle off"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">4</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Ciano</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">5</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name lined" style="padding:8px 0">Jens</td><td class="lined" style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os lined" style="padding:8px 0;text-align:right;font-size:12px">7</td><td class="lined trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+          <tr><td class="name" style="padding:8px 0">Martin</td><td style="padding:8px 0;text-align:center"><span class="toggle on"><span class="knob"></span></span></td><td class="num-os" style="padding:8px 0;text-align:right;font-size:12px">0</td><td class="trash" style="padding:8px 0;text-align:right">🗑</td></tr>
+        </table>
+      </div>
+      <div class="bottomtabs">
+        <div class="bt"><span class="ico">📊</span>Ranking</div>
+        <div class="bt"><span class="ico">📅</span>Spieltage</div>
+        <div class="bt"><span class="ico">👤</span>Spieler</div>
+        <div class="bt active"><span class="ico">⚙️</span>Admin</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --font-alfa: var(--ff-alfa), serif;
+  --font-oswald: var(--ff-oswald), system-ui, sans-serif;
+  --font-work: var(--ff-work), system-ui, sans-serif;
+
+  --color-cream: #f2e7ce;
+  --color-tan: #e8d9b5;
+  --color-rust: #c94a2b;
+  --color-forest: #1e4a3c;
+  --color-ink: #0e1a1a;
+  --color-slate: #3a4747;
+  --color-mist: #6a7575;
+}
