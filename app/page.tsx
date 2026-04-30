@@ -1,281 +1,205 @@
-import { supabase, type MoneylistRow } from "@/lib/supabase";
+import Link from "next/link";
+import { PhoneFrame } from "@/components/PhoneFrame";
+import { Countdown } from "@/components/Countdown";
+import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-const eur = new Intl.NumberFormat("de-DE", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
+const WEEKDAYS = [
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+];
 
-function PhoneFrame({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-[#1a1a2e] py-6 flex items-start justify-center">
-      <div
-        className="w-[375px] max-w-[375px] bg-cream rounded-[14px] border-2 border-ink overflow-hidden text-ink font-work"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(14,26,26,.04) 1px, transparent 1px), radial-gradient(rgba(14,26,26,.03) 1px, transparent 1px)",
-          backgroundSize: "3px 3px, 7px 7px",
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
+function fmtDate(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
 }
 
-function Header() {
-  // Mockup: padding:0 16px; gap:12px; height:80px; overflow:hidden;
-  // Logo: height:140px;width:auto; absichtlich überlappend.
-  return (
-    <div
-      className="bg-rust text-cream flex items-center justify-center overflow-hidden"
-      style={{ height: 80, padding: "0 16px", gap: 12 }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt="Windmill Poker"
-        style={{
-          height: 140,
-          width: "auto",
-          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.35))",
-        }}
-      />
-      <span
-        className="font-alfa whitespace-nowrap"
-        style={{ fontSize: 22, letterSpacing: "0.02em", lineHeight: 1 }}
-      >
-        WINDMILL POKER
-      </span>
-    </div>
-  );
+function fmtWeekday(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 }
 
-function Toggle({ active }: { active: "moneylist" | "avg" }) {
-  // Mockup: margin:6px 10px; border:2px solid ink; rounded; oswald uppercase 12px 600;
-  // padding:7px je Tab.
-  const base =
-    "flex-1 text-center font-oswald uppercase font-semibold";
-  return (
-    <div
-      className="flex border-2 border-ink rounded-md overflow-hidden"
-      style={{
-        margin: "6px 10px",
-        fontSize: 12,
-        letterSpacing: "0.14em",
-      }}
-    >
-      <div
-        className={`${base} ${
-          active === "moneylist" ? "bg-forest text-cream" : "text-slate"
-        }`}
-        style={{ padding: 7 }}
-      >
-        Moneylist
-      </div>
-      <div
-        className={`${base} ${
-          active === "avg" ? "bg-forest text-cream" : "text-slate"
-        }`}
-        style={{ padding: 7 }}
-      >
-        €/Spieltag
-      </div>
-    </div>
-  );
+async function findNextGameDate(): Promise<{
+  iso: string;
+  participants: number;
+  waitlist: number;
+} | null> {
+  // Aktueller offener Spieltag definiert next_game_date + Planung.
+  const { data } = await supabase
+    .from("game_days")
+    .select("id,next_game_date")
+    .eq("is_closed", false)
+    .not("next_game_date", "is", null)
+    .order("played_on", { ascending: false })
+    .limit(1);
+
+  const anchor = data?.[0];
+  if (!anchor?.next_game_date) return null;
+
+  const planning = await supabase
+    .from("next_game_planning")
+    .select("role")
+    .eq("game_day_id", anchor.id);
+
+  const participants =
+    planning.data?.filter((r) => r.role === "participant").length ?? 0;
+  const waitlist =
+    planning.data?.filter((r) => r.role === "waitlist").length ?? 0;
+
+  return { iso: anchor.next_game_date, participants, waitlist };
 }
 
-function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
-  return (
-    <div style={{ padding: "0 10px 2px" }}>
-      <table
-        className="w-full border-collapse font-work"
-        style={{ fontSize: 13 }}
-      >
-        <thead>
-          <tr
-            className="font-oswald uppercase text-mist font-semibold text-left"
-            style={{ fontSize: 10, letterSpacing: "0.14em" }}
-          >
-            <th
-              style={{
-                padding: "5px 3px",
-                borderBottom: "2px solid rgba(14,26,26,0.35)",
-              }}
-            >
-              #
-            </th>
-            <th
-              style={{
-                padding: "5px 3px",
-                borderBottom: "2px solid rgba(14,26,26,0.35)",
-              }}
-            >
-              Spieler
-            </th>
-            <th
-              className="text-right"
-              style={{
-                padding: "5px 3px",
-                borderBottom: "2px solid rgba(14,26,26,0.35)",
-              }}
-            >
-              Gewinn
-            </th>
-            <th
-              className="text-right"
-              style={{
-                padding: "5px 3px",
-                borderBottom: "2px solid rgba(14,26,26,0.35)",
-              }}
-            >
-              ST
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => {
-            const rank = i + 1;
-            const isLast = i === rows.length - 1;
-            const cellBorder = isLast
-              ? undefined
-              : "1px solid rgba(14,26,26,0.15)";
-            const isTop1 = rank === 1;
-            const isTop23 = rank === 2 || rank === 3;
-
-            return (
-              <tr
-                key={r.id}
-                style={
-                  isTop1 ? { color: "#C94A2B", fontWeight: 700 } : undefined
-                }
-              >
-                <td style={{ padding: "6px 3px", borderBottom: cellBorder }}>
-                  {isTop1 ? (
-                    <span
-                      className="bg-rust text-cream font-oswald font-semibold rounded"
-                      style={{
-                        padding: "1px 5px",
-                        fontSize: 11,
-                      }}
-                    >
-                      1
-                    </span>
-                  ) : isTop23 ? (
-                    <span
-                      className="bg-tan font-oswald font-semibold rounded"
-                      style={{ padding: "1px 5px", fontSize: 11 }}
-                    >
-                      {rank}
-                    </span>
-                  ) : (
-                    <span
-                      className="text-mist font-oswald"
-                      style={{ padding: "1px 5px", fontSize: 11 }}
-                    >
-                      {rank}
-                    </span>
-                  )}
-                </td>
-                <td
-                  className="font-oswald font-semibold"
-                  style={{ padding: "6px 3px", borderBottom: cellBorder }}
-                >
-                  {r.name}
-                </td>
-                <td
-                  className="text-right font-oswald font-semibold"
-                  style={{
-                    padding: "6px 3px",
-                    borderBottom: cellBorder,
-                    fontSize: isTop1 ? 14 : undefined,
-                    letterSpacing: isTop1 ? "0.06em" : undefined,
-                  }}
-                >
-                  {eur.format(r.total_winnings)}
-                </td>
-                <td
-                  className="text-right"
-                  style={{
-                    padding: "6px 3px",
-                    borderBottom: cellBorder,
-                    fontSize: 12,
-                    color: isTop1 ? undefined : "#6A7575",
-                  }}
-                >
-                  {r.game_days_played}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function BottomNav({
-  active,
-}: {
-  active: "ranking" | "spieltage" | "spieler" | "admin";
-}) {
-  const tabs = [
-    { key: "ranking", icon: "📊", label: "Ranking" },
-    { key: "spieltage", icon: "📅", label: "Spieltage" },
-    { key: "spieler", icon: "👤", label: "Spieler" },
-    { key: "admin", icon: "⚙️", label: "Admin" },
-  ] as const;
+export default async function Deckblatt() {
+  const next = await findNextGameDate();
+  // Default-Zielzeit: 19:15 lokal, wenn ein Datum existiert.
+  const targetIso = next ? `${next.iso}T19:15:00` : null;
 
   return (
-    <div
-      className="flex bg-tan"
-      style={{ borderTop: "2px solid rgba(14,26,26,0.35)" }}
-    >
-      {tabs.map((t) => {
-        const isActive = t.key === active;
-        return (
+    <PhoneFrame activeTab={null}>
+      {next && targetIso ? (
+        <div
+          className="bg-forest text-cream"
+          style={{
+            margin: "24px 18px 14px",
+            padding: "22px 18px 20px",
+            border: "2px solid #0E1A1A",
+            borderRadius: 14,
+            boxShadow: "0 4px 0 rgba(14,26,26,0.25)",
+            textAlign: "center",
+          }}
+        >
           <div
-            key={t.key}
-            className="flex-1 text-center font-oswald uppercase"
+            className="font-oswald uppercase font-semibold"
             style={{
-              padding: "10px 4px",
-              fontSize: 10,
-              letterSpacing: "0.1em",
-              color: isActive ? "#C94A2B" : "#3A4747",
-              fontWeight: isActive ? 600 : 400,
-              borderTop: isActive ? "2px solid #C94A2B" : undefined,
-              marginTop: isActive ? -2 : 0,
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              color: "#E9B63A",
+              marginBottom: 6,
             }}
           >
-            <div style={{ fontSize: 18, marginBottom: 2 }}>{t.icon}</div>
-            {t.label}
+            Nächster Spieltag
           </div>
-        );
-      })}
-    </div>
-  );
-}
-
-export default async function Home() {
-  const { data, error } = await supabase
-    .from("moneylist")
-    .select("*")
-    .order("total_winnings", { ascending: false });
-
-  const rows = (data ?? []) as MoneylistRow[];
-
-  return (
-    <PhoneFrame>
-      <Header />
-      <Toggle active="moneylist" />
-      {error ? (
-        <pre className="text-rust text-xs p-2">{error.message}</pre>
+          <div
+            className="font-alfa"
+            style={{
+              fontSize: 30,
+              lineHeight: 1,
+              letterSpacing: "0.02em",
+              marginBottom: 4,
+            }}
+          >
+            {fmtDate(next.iso)}
+          </div>
+          <div
+            className="font-oswald"
+            style={{
+              fontSize: 13,
+              color: "#E9B63A",
+              letterSpacing: "0.1em",
+              marginBottom: 14,
+            }}
+          >
+            {fmtWeekday(next.iso)} · 19:15 Uhr
+          </div>
+          <Countdown targetIso={targetIso} />
+        </div>
       ) : (
-        <MoneylistTable rows={rows} />
+        <div
+          className="bg-forest text-cream"
+          style={{
+            margin: "24px 18px 14px",
+            padding: "22px 18px 20px",
+            border: "2px solid #0E1A1A",
+            borderRadius: 14,
+            textAlign: "center",
+          }}
+        >
+          <div
+            className="font-oswald uppercase font-semibold"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              color: "#E9B63A",
+              marginBottom: 6,
+            }}
+          >
+            Nächster Spieltag
+          </div>
+          <div
+            className="font-alfa"
+            style={{ fontSize: 22, lineHeight: 1.2, letterSpacing: "0.02em" }}
+          >
+            noch nicht geplant
+          </div>
+        </div>
       )}
-      <BottomNav active="ranking" />
+
+      <Link
+        href="/teilnehmer"
+        className="flex items-center justify-between"
+        style={{
+          margin: "0 18px 14px",
+          padding: "14px 18px",
+          background: "rgba(255,255,255,0.5)",
+          border: "2px solid #0E1A1A",
+          borderRadius: 12,
+          textDecoration: "none",
+        }}
+      >
+        <div className="flex items-center" style={{ gap: 12 }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>👥</span>
+          <div>
+            <div
+              className="font-oswald uppercase font-bold text-ink"
+              style={{ fontSize: 14, letterSpacing: "0.12em" }}
+            >
+              Teilnehmer
+            </div>
+            <div
+              className="font-work text-mist"
+              style={{ fontSize: 11, letterSpacing: "0.05em", marginTop: 2 }}
+            >
+              {next
+                ? `${next.participants} angemeldet · ${next.waitlist} auf Warteliste`
+                : "noch keine Anmeldungen"}
+            </div>
+          </div>
+        </div>
+        <span className="font-oswald text-mist" style={{ fontSize: 22 }}>
+          ›
+        </span>
+      </Link>
+
+      <div
+        className="flex justify-end"
+        style={{ padding: "0 18px 16px" }}
+      >
+        <Link
+          href="/gallerie"
+          className="inline-flex items-center font-oswald uppercase font-semibold"
+          style={{
+            gap: 8,
+            padding: "10px 16px 10px 14px",
+            background: "#C94A2B",
+            color: "#F2E7CE",
+            border: "2px solid #0E1A1A",
+            borderRadius: 24,
+            boxShadow: "0 3px 0 rgba(14,26,26,0.25)",
+            fontSize: 12,
+            letterSpacing: "0.12em",
+            textDecoration: "none",
+          }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>📷</span>
+          Gallerie
+        </Link>
+      </div>
     </PhoneFrame>
   );
 }
