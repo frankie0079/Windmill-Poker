@@ -94,7 +94,7 @@ export default async function SpieltagePage() {
       </div>
 
       <div
-        className="overflow-y-auto"
+        className="overflow-y-auto scroll-warm"
         style={{ padding: "6px 10px 10px", maxHeight: 520 }}
       >
         {error && (
