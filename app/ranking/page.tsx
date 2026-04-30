@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { supabase, type MoneylistRow } from "@/lib/supabase";
 
@@ -9,36 +10,56 @@ const eur = new Intl.NumberFormat("de-DE", {
   maximumFractionDigits: 0,
 });
 
-function Toggle({ active }: { active: "moneylist" | "avg" }) {
+const eur2 = new Intl.NumberFormat("de-DE", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 2,
+});
+
+type View = "total" | "avg";
+
+function Toggle({ active }: { active: View }) {
   // Mockup: margin:6px 10px; border:2px solid ink; rounded; oswald uppercase
   // 12px 600; padding:7px je Tab.
-  const base = "flex-1 text-center font-oswald uppercase font-semibold";
+  const base =
+    "flex-1 text-center font-oswald uppercase font-semibold no-underline";
+  const tabStyle = { padding: 7, textDecoration: "none" };
   return (
     <div
       className="flex border-2 border-ink rounded-md overflow-hidden"
       style={{ margin: "6px 10px", fontSize: 12, letterSpacing: "0.14em" }}
     >
-      <div
+      <Link
+        href="/ranking"
         className={`${base} ${
-          active === "moneylist" ? "bg-forest text-cream" : "text-slate"
+          active === "total" ? "bg-forest text-cream" : "text-slate"
         }`}
-        style={{ padding: 7 }}
+        style={tabStyle}
       >
         Moneylist
-      </div>
-      <div
+      </Link>
+      <Link
+        href="/ranking?view=avg"
         className={`${base} ${
           active === "avg" ? "bg-forest text-cream" : "text-slate"
         }`}
-        style={{ padding: 7 }}
+        style={tabStyle}
       >
         €/Spieltag
-      </div>
+      </Link>
     </div>
   );
 }
 
-function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
+function RankingTable({
+  rows,
+  view,
+}: {
+  rows: MoneylistRow[];
+  view: View;
+}) {
+  const valueColLabel = view === "avg" ? "€/Spt" : "Gewinn";
+
   return (
     <div style={{ padding: "0 10px 2px" }}>
       <table
@@ -73,7 +94,7 @@ function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
                 borderBottom: "2px solid rgba(14,26,26,0.35)",
               }}
             >
-              Gewinn
+              {valueColLabel}
             </th>
             <th
               className="text-right"
@@ -95,6 +116,11 @@ function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
               : "1px solid rgba(14,26,26,0.15)";
             const isTop1 = rank === 1;
             const isTop23 = rank === 2 || rank === 3;
+
+            const value =
+              view === "avg"
+                ? eur2.format(r.avg_per_gameday)
+                : eur.format(r.total_winnings);
 
             return (
               <tr
@@ -142,7 +168,7 @@ function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
                     letterSpacing: isTop1 ? "0.06em" : undefined,
                   }}
                 >
-                  {eur.format(r.total_winnings)}
+                  {value}
                 </td>
                 <td
                   className="text-right"
@@ -160,25 +186,48 @@ function MoneylistTable({ rows }: { rows: MoneylistRow[] }) {
           })}
         </tbody>
       </table>
+      {view === "avg" && (
+        <div
+          className="text-mist italic"
+          style={{
+            padding: "8px 4px 0",
+            fontSize: 10,
+            lineHeight: 1.4,
+          }}
+        >
+          Wertung nur für Spieler mit ≥8 Teilnahmen.
+        </div>
+      )}
     </div>
   );
 }
 
-export default async function Home() {
-  const { data, error } = await supabase
-    .from("moneylist")
-    .select("*")
-    .order("total_winnings", { ascending: false });
+export default async function RankingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view: viewParam } = await searchParams;
+  const view: View = viewParam === "avg" ? "avg" : "total";
 
-  const rows = (data ?? []) as MoneylistRow[];
+  const { data, error } = await supabase.from("moneylist").select("*");
+  let rows = (data ?? []) as MoneylistRow[];
+
+  if (view === "avg") {
+    rows = rows
+      .filter((r) => r.game_days_played >= 8)
+      .sort((a, b) => b.avg_per_gameday - a.avg_per_gameday);
+  } else {
+    rows = rows.sort((a, b) => b.total_winnings - a.total_winnings);
+  }
 
   return (
     <PhoneFrame activeTab="ranking">
-      <Toggle active="moneylist" />
+      <Toggle active={view} />
       {error ? (
         <pre className="text-rust text-xs p-2">{error.message}</pre>
       ) : (
-        <MoneylistTable rows={rows} />
+        <RankingTable rows={rows} view={view} />
       )}
     </PhoneFrame>
   );

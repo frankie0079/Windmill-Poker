@@ -63,3 +63,20 @@ ST 11 = 19.02.2026, Frank Tagessieg mit 100€.
 ST 12 (05.03.26) ist in Excel angelegt aber leer (Platzhalter, in DB nicht enthalten).
 Nächster geplanter Spieltag = 07.05.2026 (Donnerstag, 19:15) → in DB als
 `ST11.next_game_date` mit `next_game_planning`-Liste (8 Teilnehmer + 3 Warteliste).
+
+## Tagessieger-Logik
+
+Konsistent über alle Screens:
+- Pro Spieltag: Spieler mit höchstem Gesamt-Payout (Summe aller round_results).
+- **Nur eindeutig**: bei Gleichstand → kein Tagessieger (kein Highlight).
+- Visualisierung: rust (`#C94A2B`) + `font-weight:700`.
+- Verwendung: Bar-Chart im Spielerprofil, Detail-Tabelle in `/spieltage` Expander.
+
+## Routing-Konventionen
+
+- `/` = Deckblatt (kein Bottom-Tab aktiv)
+- `/ranking` = Moneylist (Tab "Ranking"), `?view=avg` = €/Spieltag-Variante
+- `/spieltage` = Liste mit `<details>`-Expandern (kein Client-State nötig)
+- `/spieler`, `/spieler/[id]` = Liste + Profil (Tab "Spieler")
+- `/teilnehmer`, `/gallerie`, `/gallerie/[id]` = Sub-Screens vom Deckblatt (kein Tab aktiv)
+- `/admin` = TODO, mit Auth

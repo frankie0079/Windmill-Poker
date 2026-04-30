@@ -3,94 +3,105 @@
 > Wird am Ende jeder Session aktualisiert. Beim Start als erstes lesen.
 
 **Letzte Session:** 2026-04-30
-**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (Phase 3 — Seed-Import + Moneylist-Bugfix)
+**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (Phase 5 — Ranking-Toggle + Spieltage-Expander)
 
 ## Wo wir stehen
 
 - **Phase 1 Design + 1.5 Mockup-Erweiterung** ✓ abgeschlossen.
-- **Phase 2 Backend-Fundament** ✓ abgeschlossen. Supabase-Projekt live, Schema + RLS + Storage gepusht.
-- **Phase 3 Seed-Import** ✓ abgeschlossen. 10 Spieltage aus Test-Excel in Cloud-DB, moneylist-View matcht Excel-Rangliste zellgenau.
-- **Phase 4 Next.js-Skeleton** offen. Routes, Components, Supabase-Client. ~1-2 Std.
-- **Phase 5 Frontend-Implementierung** offen. Alle Screens echt. Mehrere Sessions.
-- **Phase 6 Deploy + PWA** offen. ~1 Std.
+- **Phase 2 Backend-Fundament** ✓ abgeschlossen. Supabase live, Schema + RLS + Storage gepusht.
+- **Phase 3 Seed-Import** ✓ abgeschlossen. Re-Seed v2 aus Auszahlungen-Sheet (11 STs inkl. ST11 19.02.26 mit Frank-Tagessieg). Σ + Teilnahmen matchen Excel zellgenau.
+- **Phase 4 Next.js-Skeleton** ✓ abgeschlossen. Next.js 16 + Tailwind 4 + Supabase-Client.
+- **Phase 5 Frontend-Implementierung** ~85 % fertig. Alle Read-Screens stehen mockup-treu. Was offen ist:
+  - **Admin-Screen** (`/admin`) — Sub-Tabs, Eingabe Spieltag, Nächster Spieltag, Spielerverwaltung, mit Supabase-Auth für Schreib-Operationen. Komplexester Screen, eigene Session.
+- **Phase 6 Deploy + PWA** offen. Vercel + next-pwa + Service Worker. ~1 Std.
 
-Realistische Schätzung: ca. 35 % des Gesamtwegs erledigt.
+Realistische Schätzung: ca. 80 % des Gesamtwegs erledigt.
 
 ## Heute erledigt (2026-04-30)
 
-**Phase 3 — Seed-Import:**
-- `scripts/seed_import.py` parst rechte Seite (Spieler/Betrag pro ST) + linke Seite (anwesend für Teilnehmerliste, deckt 0-EUR-Spieltage ab). Idempotent via Upsert.
-- `scripts/verify_seed.py` cross-checkt Excel ↔ Cloud-DB zellgenau (10 STs, 10 Spieler, 74 Teilnahmen, 57 Auszahlungen mit Betrag > 0). Match!
-- `scripts/requirements.txt` (openpyxl, supabase, python-dotenv).
-- `.env.local` um `SUPABASE_SERVICE_ROLE_KEY` ergänzt (gitignored).
+**Phase 4 — Next.js-Skeleton:**
+- `npx create-next-app@latest` (Next 16, React 19, Tailwind 4, App Router) ins Repo-Root.
+- `@supabase/supabase-js`, `lib/supabase.ts`, `NEXT_PUBLIC_SUPABASE_URL/ANON_KEY` ergänzt.
+- Mockups nach `docs/mockups/` gerettet (vorher gitignored), CLAUDE.md mit harter Regel "Mockups sind Pixel-Vorgabe".
 
-**Bugfix — moneylist-View:**
-- Migration `20260430153837_fix_moneylist_view.sql`: kartesisches Produkt zwischen `attendances` und `round_results` korrigiert (Pre-Aggregation per Subquery). Vorher waren totals 10× zu hoch.
-- moneylist-Werte jetzt 1:1 wie Excel-Rangliste R102+ und Avg-Rangliste R117+.
+**Phase 5 — Read-Screens:**
+- `/` Deckblatt mit Countdown-Hero auf 07.05.2026 19:15 (Client-Component, Padding 07/02), Teilnehmer-Button, Gallerie-FAB.
+- `/ranking` Moneylist + €/Spieltag-Toggle (klickbar, `?view=avg`, ≥8-Teilnahmen-Filter laut Spec). Top-1 rust+bold, Top-2/3 tan-Badge.
+- `/spieltage` 11 STs mit Status-Pills (gold offen / forest abgeschlossen). Klickbar via `<details>`/`<summary>` (kein Client-State), Tagessieger im Detail rust+bold.
+- `/spieler` alphabetische Liste, klickbar.
+- `/spieler/[id]` Profil: Top-Bar mit Name + Zurück, 2 Platz-Badges (rust Moneylist / forest €/Spieltag), 3 Stat-Karten (Oswald 22 700), Bar-Chart (Tagessieger rust, 0 grau, sonst gold, Jahres-Trennstriche), Spieltage-Tabelle.
+- `/teilnehmer` 8 + 3 Warteliste mit Pos-Badges.
+- `/gallerie` Foto-Grid (Empty-State), `/gallerie/[id]` Foto-Detail mit Kommentar.
+- Shared: `PhoneFrame`, `Header`, `BottomNav` (mit Routing), `BackButton`, `Countdown`.
+- Sandige 4px-Scrollbar als `.scroll-warm` Utility (Tailwind 4 erfordert `@layer utilities`).
 
-**Untracked-Files (parallele VS-Code-Session) gelöscht** (auf Anweisung):
-- `Coverbild_Poker.png`, `build_mockups_final.py`, `gen_spieler_profil.py` + v2/v3/v4, `gen_spieltage_v2.py`, `gen_spieltage_v3.py`.
+**Re-Seed v2 (kritisch):**
+- Excel-Source-of-Truth gewechselt von Sheet "2025" zu Sheet "Auszahlungen" — letzteres hat alle 12 STs horizontal mit Σ + €/Spt + Teilnahmen.
+- ST11 (19.02.26) korrekt importiert, Frank: 590€ / 11 / 53,64€ ✓.
+- ST12 (05.03.26) Platzhalter (alle Werte 0) — übersprungen.
+- ST11-Anwesenheit aus Differenz `Excel-Teilnahmen - Sheet-2025-Anwesend-Count`.
+- `scripts/seed_v2.py` (Reset+Insert), `scripts/verify_v2.py` (Zell-für-Zell Cross-Check).
+- Martin als Spieler angelegt (war im Mockup, fehlte in Excel-Anwesenheit).
+- next_game_planning auf ST11: 8 Teilnehmer (Frank, Peter, Friedl, Jörg, Rainer, Jochen, Ciano, Torben) + 3 Warteliste (Werner-1, Jens-2, Martin-3).
 
 **Lessons:**
-- Beim Schema-Design Views immer mit Test-Daten verifizieren — der attendances/round_results-Cross-Join war im leeren Schema nicht sichtbar.
-- Beim Excel-Parsing Domain-Modell zuerst klären (hier: nur Geld pro Spieltag, keine Per-Runde-Splits) — hat einen halben Anlauf gespart, als ich das verstand.
-
-## Erledigt 2026-04-29
-
-**Phase 1.5 — Mockup-Erweiterung:**
-- Admin-Mockup neu strukturiert: 2 Sub-Tabs (Eingabe Spieltag / Nächster Spieltag), Spielerverwaltung als Sub-Screen
-- Deckblatt-Mockup mit Countdown-Hero-Card + Teilnehmer-Button + Gallerie-FAB
-- Teilnehmer-Liste-Screen (8 angemeldet + 3 Warteliste auf Plätzen 9–11)
-- Gallerie + Foto-Detail mit Kommentar (Beispiel: "AA888 wird von 8888 geschlagen")
-- Spieltage-Screen mit Status-Pill (Offen/Abgeschlossen) + scrollbarer Liste
-
-**Spec-Update** (`docs/superpowers/specs/2026-04-27-poker-score-tracker-design.md`):
-- `players.is_active` (Soft-Delete)
-- `payouts NUMERIC(10,2)` mit ±2 Cent Toleranz
-- `game_days.next_game_date` + `is_closed`
-- Neue Tabellen: `next_game_planning`, `gallery_photos`
-- Supabase Storage für Foto-Bucket
-- Verhaltensregeln (Inaktive aus Rankings raus, Reaktivierung stellt Daten wieder her)
-
-**Phase 2 — Backend-Fundament:**
-- Scoop installiert, Supabase CLI v2.95.4 via scoop installiert
-- `supabase init` im Repo, dann `supabase login` + `supabase link --project-ref dcqsvquklwjfhmsfpodo` + `supabase db push`
-- 2 Migrations gepusht: `20260429152934_initial_schema.sql` (Tabellen + View + Indexes) + `20260429153420_rls_and_storage.sql` (RLS-Policies + Storage-Bucket)
-- 6 Tabellen + View `moneylist` + Bucket `gallery-photos` (public) verifiziert
-- `.env.local` gitignored hinzugefügt (Secrets-Schutz)
-
-**Permissions optimiert:** `.claude/settings.json` mit 8 MCP-Playwright-Allowlist-Einträgen (Navigate, Screenshot, Snapshot, Click etc.)
+- Excel hat manchmal mehrere Sheets; "Auszahlungen" war die echte Datenquelle, "2025" nur Score-Tracking-Matrix mit weniger STs. Beim Onboarding ALLE Sheets durchforsten.
+- `0` in einer Excel-Zelle ist mehrdeutig — kann "teilgenommen, kein Gewinn" oder "Formel-Leftover/nicht teilgenommen" sein. Discriminator ist die Teilnahmen-Spalte.
+- Tailwind 4 + Custom-CSS muss in `@layer utilities` rein, sonst tree-shaked vom Turbopack.
+- `<details>`/`<summary>` für Inline-Expander spart einen Client-Component.
 
 ## Offene Punkte für nächste Session
 
-1. **Phase 4 Next.js-Skeleton starten** — `pnpm create next-app` oder `npx create-next-app`, Supabase-Client einrichten, erste Route gegen `moneylist`.
-2. **Storage-Bucket-Migration nachschärfen** — der INSERT in `storage.buckets` über die Migration hat erst beim manuellen Anlegen im Dashboard durchgegriffen. Beim nächsten Setup vermutlich wieder Reibung.
-3. **Test-Excel hat nur 10 STs**, Spec spricht von 12. Wenn echte Daten kommen, `seed_import.py` ist generisch — sollte ohne Anpassung weitere Blöcke schlucken.
+1. **Admin-Screen** (`/admin`) — Sub-Tabs Eingabe/Nächster/Spielerverwaltung. Komplex: Schreib-Operationen, Supabase-Auth (nur Admin = Frank). Mockup `docs/mockups/admin.html`. Schritte:
+   - Login-Page (Supabase Auth, magic link oder password).
+   - `@supabase/ssr` Client für Cookie-Session.
+   - RLS-Policies in DB sind schon authenticated-only.
+   - Spieltag-Eingabe-Form: 11 Spieler aus next_game_planning, R1+R2-Inputs, Validierung Topf=N×40, INSERT round_results, attendances.
+   - Nächster-Spieltag-Form: Datum, Teilnehmer 8+3 verschieben.
+   - Spielerverwaltung: aktivieren/deaktivieren, neuen anlegen.
+2. **Storage-Bucket-Migration nachschärfen** — beim nächsten Setup vermutlich wieder Reibung.
+3. **Phase 6: Vercel-Deploy + next-pwa** — Service Worker, manifest.json, iPhone-Home-Screen-Icon.
+4. **Bar-Chart vom Spielerprofil**: bei mehr als ~10 Spieltagen scrollt's horizontal — Sandig-Scrollbar via `.scroll-warm` ist drin, aber nochmal visuell prüfen sobald ST12+ Daten haben.
 
 ## Supabase
 
 - **Project URL:** `https://dcqsvquklwjfhmsfpodo.supabase.co` (in `.env.local`)
 - **Dashboard:** https://supabase.com/dashboard/project/dcqsvquklwjfhmsfpodo
 - **Project Ref:** `dcqsvquklwjfhmsfpodo`
-- **CLI verlinkt:** ja, `supabase migration list --linked` zeigt alle 3 Migrations gesynced (initial_schema, rls_and_storage, fix_moneylist_view)
-- **Anon-Key:** in `.env.local` (gitignored)
-- **Service-Role-Key:** in `.env.local` (gitignored, wird vom Seed-Skript für RLS-Bypass beim Schreiben gebraucht)
+- **CLI verlinkt:** ja, `supabase migration list --linked` zeigt 3 Migrations
+- **Anon-Key + Service-Role-Key:** in `.env.local` (gitignored)
+- **NEXT_PUBLIC_SUPABASE_URL/ANON_KEY:** in `.env.local` für Frontend
 - **DB-Passwort:** kennt Frank (manuell beim Linken eingegeben)
-- **Setup-Skript:** `setup-supabase.bat` im Repo-Root (idempotent für Re-Runs)
-- **Seed-Skript:** `python scripts/seed_import.py` (idempotent, `--dry-run` für Vorschau ohne Write)
+- **Setup-Skript:** `setup-supabase.bat` im Repo-Root (idempotent)
+- **Seed-Skripte:** `python scripts/seed_v2.py` (autoritativ aus Auszahlungen) + `verify_v2.py`
+
+## Frontend-Stack
+
+- **Next.js 16.2.4 + React 19.2.4** (Turbopack)
+- **Tailwind 4** (CSS-first config in `app/globals.css` `@theme {}`)
+- **Fonts:** Alfa Slab One (Logo/Hero), Oswald (Labels/Tabellen), Work Sans (Body) — alle via `next/font/google`
+- **Dev-Server:** `npm run dev` → http://localhost:3000
+- **Routes:** `/` (Deckblatt), `/ranking` (mit `?view=avg`), `/spieltage`, `/spieler`, `/spieler/[id]`, `/teilnehmer`, `/gallerie`, `/gallerie/[id]`, `/admin` (TODO)
+
+## GitHub
+
+- **Remote:** https://github.com/frankie0079/Windmill-Poker.git
+- Pushes ab heute aktiv.
 
 ## Visual Companion
 
 - **Server-Skript:** `C:\DEV\sandbox\superpowers-framework\skills\brainstorming\scripts\start-server.sh`
-- **Start:** Bash-Tool mit `run_in_background: true`, Flag `--project-dir /c/DEV/sandbox/Superpowers-Trial_one`
-- **Letzte Session-Dir:** `.superpowers/brainstorm/801-1777469477/` (am Sessionende stoppen)
-- **Wichtig:** Server serviert immer die *neueste* Datei am Root-URL `/`. Mehrere Mockups übereinander in einer Datei (Stacked Frames) hat sich bewährt.
+- **Letzte Session-Dir:** `.superpowers/brainstorm/801-1777469477/`
+- **Hinweis:** Mockups jetzt redundant in `docs/mockups/`, brainstorm-Dirs nur noch für Workflow-Historie.
 
 ## Hinweis an mich (Claude)
 
 Beim nächsten Start:
-- Memory + dieser SESSION_STATE laden automatisch
-- **Phase 4 Frage stellen:** Frontend-Skeleton mit `pnpm create next-app` jetzt? Routing-Plan + Supabase-Client zuerst, oder direkt Mock-Komponenten porten?
-- Frank ist bei Reibungspunkten allergisch — bei Permissions-Pop-ups, fehlenden Copy-Buttons, UI-Halluzinationen schnell zur Lösung springen statt zu raten
-- Fragen IMMER via `AskUserQuestion` mit klickbaren Optionen — er hat das mehrfach explizit eingefordert
-- Wenn ich auf eine Aktion vom User warte (Key, Push-Confirm, etc.): **explizit als ersten Satz** sagen "ich pausiere", nicht beiläufig am Ende — Frank hat das eingefordert
+- Memory + dieser SESSION_STATE laden automatisch.
+- **Erste Frage über AskUserQuestion:** Admin jetzt anpacken (komplex, eigene Session) oder erst Phase 6 Deploy + PWA?
+- Frank ist bei Reibungspunkten allergisch — schnell zur Lösung statt zu raten.
+- Fragen IMMER via `AskUserQuestion` mit klickbaren Optionen.
+- Wenn ich auf User-Aktion warte: explizit als ersten Satz "ich pausiere".
+- Wenn ich um Browser/Screenshot bitte: **Link IMMER mit in der Nachricht**, prominent — Frank kann nicht hochscrollen.
+- Mockup-Pixel-Treue ist nicht verhandelbar (`docs/mockups/*.html` = Source of Truth).
+- Excel-Source-of-Truth = Sheet "Auszahlungen" (CLAUDE.md hat Regeln dazu).
