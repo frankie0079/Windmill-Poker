@@ -37,7 +37,8 @@
       "Bash(curl -s http://localhost:3000/ -o /tmp/p.html)",
       "Read(//tmp/**)",
       "Bash(curl -s \"http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__111h_pr._.css\" -o /tmp/css.txt)",
-      "Bash(curl -s \"http://localhost:3000/spieler/dd9b11e5-535f-4b44-8791-9ec9363f304c?v=$\\(date +%s\\)\" -o /tmp/y.html)"
+      "Bash(curl -s \"http://localhost:3000/spieler/dd9b11e5-535f-4b44-8791-9ec9363f304c?v=$\\(date +%s\\)\" -o /tmp/y.html)",
+      "Bash(curl *)"
     ]
   },
   "hooks": {
