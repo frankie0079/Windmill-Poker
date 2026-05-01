@@ -69,6 +69,7 @@ Realistische Schätzung: ~95 % des Gesamtwegs erledigt.
 
 Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 
+0. **BUG (Top-Prio): Deckblatt `/` zeigt „noch nicht geplant"** — `app/page.tsx` Zeile 37 filtert `is_closed=false`, aber alle STs sind closed. Fix: das `.eq("is_closed", false)` raus, dann ist jüngster ST mit `next_game_date` der Anker. ~5 Min.
 1. **Phase 6: Vercel-Deploy + next-pwa + iPhone-Home-Screen-Icon** (Hauptfokus, ~1–2 Std).
 2. **Bar-Chart visuell prüfen** mit ST 12 + 13 Daten (~10 Min).
 3. **Storage-Bucket-Migration** beim nächsten Setup robuster machen.
