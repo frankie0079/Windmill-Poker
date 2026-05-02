@@ -15,7 +15,7 @@ export function PhoneFrame({
   return (
     <div className="min-h-screen bg-[#1a1a2e] flex justify-center md:py-6">
       <div
-        className="w-full max-w-[420px] bg-cream md:rounded-[14px] md:border-2 md:border-ink overflow-hidden text-ink font-work flex flex-col"
+        className="w-full max-w-[420px] min-h-screen bg-cream md:rounded-[14px] md:border-2 md:border-ink overflow-hidden text-ink font-work flex flex-col"
         style={{
           backgroundImage:
             "radial-gradient(rgba(14,26,26,.04) 1px, transparent 1px), radial-gradient(rgba(14,26,26,.03) 1px, transparent 1px)",
