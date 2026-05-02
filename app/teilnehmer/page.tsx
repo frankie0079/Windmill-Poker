@@ -9,49 +9,52 @@ function fmtDate(iso: string) {
   return `${d}.${m}.${y}`;
 }
 
-type PlanningRow = {
-  role: "participant" | "waitlist";
-  status: string | null;
+type ParticipantRow = {
+  player: { id: string; name: string };
+};
+
+type WaitlistRow = {
   waitlist_rank: number | null;
   player: { id: string; name: string };
 };
 
 async function loadPlanning() {
+  // Der offene ST IST der nächste Spieltag. Teilnehmer = attendances.
   const { data: gd } = await supabase
     .from("game_days")
-    .select("id,next_game_date")
+    .select("id,played_on")
     .eq("is_closed", false)
-    .not("next_game_date", "is", null)
     .order("played_on", { ascending: false })
     .limit(1);
 
-  const anchor = gd?.[0];
-  if (!anchor?.next_game_date) return null;
+  const openSt = gd?.[0];
+  if (!openSt) return null;
 
-  const { data: planning } = await supabase
-    .from("next_game_planning")
-    .select("role,status,waitlist_rank,player:players(id,name)")
-    .eq("game_day_id", anchor.id);
+  const [{ data: att }, { data: planning }, { data: ml }] = await Promise.all([
+    supabase
+      .from("attendances")
+      .select("player:players(id,name)")
+      .eq("game_day_id", openSt.id),
+    supabase
+      .from("next_game_planning")
+      .select("waitlist_rank,player:players(id,name)")
+      .eq("game_day_id", openSt.id)
+      .eq("role", "waitlist"),
+    supabase.from("moneylist").select("id,total_winnings"),
+  ]);
 
-  // Ranking-Order für Teilnehmer aus moneylist.
-  const { data: ml } = await supabase
-    .from("moneylist")
-    .select("id,total_winnings");
   const winningsById: Record<string, number> = {};
   for (const r of ml ?? []) winningsById[r.id] = r.total_winnings;
 
-  const all = (planning ?? []) as unknown as PlanningRow[];
-  const participants = all
-    .filter((r) => r.role === "participant")
-    .sort(
-      (a, b) =>
-        (winningsById[b.player.id] ?? 0) - (winningsById[a.player.id] ?? 0)
-    );
-  const waitlist = all
-    .filter((r) => r.role === "waitlist")
-    .sort((a, b) => (a.waitlist_rank ?? 99) - (b.waitlist_rank ?? 99));
+  const participants = ((att ?? []) as unknown as ParticipantRow[]).sort(
+    (a, b) =>
+      (winningsById[b.player.id] ?? 0) - (winningsById[a.player.id] ?? 0)
+  );
+  const waitlist = ((planning ?? []) as unknown as WaitlistRow[]).sort(
+    (a, b) => (a.waitlist_rank ?? 99) - (b.waitlist_rank ?? 99)
+  );
 
-  return { date: anchor.next_game_date, participants, waitlist };
+  return { date: openSt.played_on, participants, waitlist };
 }
 
 function PosBadge({

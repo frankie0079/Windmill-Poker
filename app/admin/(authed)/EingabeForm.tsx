@@ -13,6 +13,9 @@ const eur2 = new Intl.NumberFormat("de-DE", {
   maximumFractionDigits: 2,
 });
 
+// Häufige Auszahlungsbeträge in 10er-Schritten als Quick-Pills.
+const PILL_VALUES = [0, 10, 20, 40, 60, 80, 100] as const;
+
 function parseDe(input: string): number {
   if (!input) return 0;
   const norm = input.replace(/\s/g, "").replace(",", ".");
@@ -157,104 +160,113 @@ export function EingabeForm({
         })}
       </div>
 
-      {/* Spielerliste */}
-      <div style={{ padding: "6px 14px 4px" }}>
-        <table className="w-full border-collapse" style={{ fontSize: 13 }}>
-          <thead>
-            <tr
-              className="font-oswald uppercase text-mist font-semibold"
-              style={{ fontSize: 10, letterSpacing: "0.12em" }}
+      {/* Spielerliste — Card pro Spieler mit Quick-Pills + Custom-Feld */}
+      <div style={{ padding: "4px 14px 4px" }}>
+        {attendees.map((a, i) => {
+          const raw = current[a.id] ?? "";
+          const value = parseDe(raw);
+          const top = isTop(value);
+          const isZero = value === 0;
+          const matchesPill = PILL_VALUES.includes(value as (typeof PILL_VALUES)[number]);
+          const customRaw = !matchesPill && raw !== "" ? raw : "";
+          const cardBorder = i === 0 ? undefined : "1px dashed rgba(14,26,26,0.18)";
+
+          return (
+            <div
+              key={a.id}
+              style={{
+                padding: "8px 0",
+                borderTop: cardBorder,
+              }}
             >
-              <th
-                style={{
-                  padding: "5px 0",
-                  borderBottom: "1px solid rgba(14,26,26,0.25)",
-                  textAlign: "left",
-                }}
+              <div className="flex items-baseline justify-between">
+                <span
+                  className="font-oswald font-semibold"
+                  style={{
+                    fontSize: 13,
+                    color: isZero ? "#6A7575" : undefined,
+                  }}
+                >
+                  {a.name}
+                </span>
+                <span
+                  className="font-oswald"
+                  style={{
+                    fontSize: top ? 16 : 14,
+                    fontWeight: top ? 700 : 600,
+                    color: top ? "#C94A2B" : isZero ? "#6A7575" : "#0E1A1A",
+                  }}
+                >
+                  {raw === "" ? "—" : eur2.format(value)}
+                </span>
+              </div>
+
+              <div
+                className="flex flex-wrap items-center"
+                style={{ gap: 4, marginTop: 6 }}
               >
-                Spieler
-              </th>
-              <th
-                style={{
-                  padding: "5px 0",
-                  borderBottom: "1px solid rgba(14,26,26,0.25)",
-                  textAlign: "right",
-                }}
-              >
-                Auszahlung
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendees.map((a, i) => {
-              const raw = current[a.id] ?? "";
-              const value = parseDe(raw);
-              const top = isTop(value);
-              const isZero = value === 0;
-              const cellBorder = i === 0 ? undefined : "1px dashed rgba(14,26,26,0.12)";
-              return (
-                <tr key={a.id}>
-                  <td
-                    className="font-oswald font-semibold"
-                    style={{
-                      padding: "7px 0",
-                      borderTop: cellBorder,
-                      color: isZero ? "#6A7575" : undefined,
-                    }}
-                  >
-                    {a.name}
-                  </td>
-                  <td
-                    style={{
-                      padding: "7px 0",
-                      borderTop: cellBorder,
-                      textAlign: "right",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={raw}
-                      onChange={(e) => handleChange(a.id, e.target.value)}
-                      placeholder="0"
-                      className="font-oswald font-semibold text-right"
+                {PILL_VALUES.map((pv) => {
+                  const active = matchesPill && value === pv;
+                  return (
+                    <button
+                      key={pv}
+                      type="button"
+                      onClick={() => handleChange(a.id, String(pv))}
+                      className="font-oswald font-semibold"
                       style={{
-                        width: 78,
-                        padding: "4px 6px",
-                        fontSize: top ? 14 : 13,
-                        background: "#F2E7CE",
-                        border: "2px solid #0E1A1A",
-                        borderRadius: 6,
-                        outline: "none",
-                        color: top
-                          ? "#C94A2B"
-                          : isZero
-                            ? "#6A7575"
-                            : "#0E1A1A",
-                        fontWeight: top ? 700 : 600,
-                      }}
-                    />
-                    <span
-                      className="font-oswald"
-                      style={{
-                        marginLeft: 4,
+                        minWidth: 34,
+                        padding: "5px 8px",
                         fontSize: 12,
-                        color: top
-                          ? "#C94A2B"
-                          : isZero
-                            ? "#6A7575"
-                            : undefined,
-                        fontWeight: top ? 700 : undefined,
+                        background: active ? "#1E4A3C" : "#F2E7CE",
+                        color: active ? "#F2E7CE" : "#0E1A1A",
+                        border: "1.5px solid #0E1A1A",
+                        borderRadius: 14,
+                        cursor: "pointer",
                       }}
                     >
-                      €
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      {pv}
+                    </button>
+                  );
+                })}
+                <span
+                  className="font-oswald uppercase text-mist"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.08em",
+                    margin: "0 4px 0 6px",
+                  }}
+                >
+                  oder
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={customRaw}
+                  onChange={(e) => handleChange(a.id, e.target.value)}
+                  placeholder="z.B. 6,66"
+                  aria-label={`Anderer Betrag für ${a.name}`}
+                  className="font-oswald font-semibold text-right"
+                  style={{
+                    width: 70,
+                    padding: "4px 6px",
+                    fontSize: 12,
+                    background: "#F2E7CE",
+                    border: "1.5px solid #0E1A1A",
+                    borderRadius: 6,
+                    outline: "none",
+                    color: customRaw !== "" ? "#0E1A1A" : "#6A7575",
+                  }}
+                />
+                <span
+                  className="font-oswald"
+                  style={{ fontSize: 12, marginLeft: 2 }}
+                >
+                  €
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Pott-Check */}

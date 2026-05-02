@@ -30,29 +30,37 @@ async function findNextGameDate(): Promise<{
   participants: number;
   waitlist: number;
 } | null> {
-  // Aktueller offener Spieltag definiert next_game_date + Planung.
+  // Der offene ST IST der nächste Spieltag — sein played_on ist das Datum,
+  // seine attendances sind die Teilnehmer. (Lifecycle: closeAndStartNext legt
+  // beim Abschluss eines STs den neuen offenen ST inkl. attendances aus
+  // next_game_planning an.)
   const { data } = await supabase
     .from("game_days")
-    .select("id,next_game_date")
+    .select("id,played_on")
     .eq("is_closed", false)
-    .not("next_game_date", "is", null)
     .order("played_on", { ascending: false })
     .limit(1);
 
-  const anchor = data?.[0];
-  if (!anchor?.next_game_date) return null;
+  const openSt = data?.[0];
+  if (!openSt) return null;
 
-  const planning = await supabase
-    .from("next_game_planning")
-    .select("role")
-    .eq("game_day_id", anchor.id);
+  const [att, wait] = await Promise.all([
+    supabase
+      .from("attendances")
+      .select("id", { count: "exact", head: true })
+      .eq("game_day_id", openSt.id),
+    supabase
+      .from("next_game_planning")
+      .select("id", { count: "exact", head: true })
+      .eq("game_day_id", openSt.id)
+      .eq("role", "waitlist"),
+  ]);
 
-  const participants =
-    planning.data?.filter((r) => r.role === "participant").length ?? 0;
-  const waitlist =
-    planning.data?.filter((r) => r.role === "waitlist").length ?? 0;
-
-  return { iso: anchor.next_game_date, participants, waitlist };
+  return {
+    iso: openSt.played_on,
+    participants: att.count ?? 0,
+    waitlist: wait.count ?? 0,
+  };
 }
 
 export default async function Deckblatt() {
