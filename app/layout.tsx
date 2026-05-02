@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Alfa_Slab_One, Oswald, Work_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +21,19 @@ const workSans = Work_Sans({
 export const metadata: Metadata = {
   title: "Windmill Poker",
   description: "Score-Tracker für Windmill Poker",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Windmill Poker",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#1E4A3C",
 };
 
 export default function RootLayout({
