@@ -60,21 +60,7 @@ export default async function GalleriePage() {
             {photos.length} {photos.length === 1 ? "Foto" : "Fotos"}
           </div>
         </div>
-        {isAdmin ? (
-          <UploadButtons />
-        ) : (
-          <Link
-            href="/admin/login"
-            className="font-oswald uppercase font-semibold text-rust"
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.1em",
-              textDecoration: "underline",
-            }}
-          >
-            Login zum Hochladen
-          </Link>
-        )}
+        {isAdmin && <UploadButtons />}
       </div>
 
       {isAdmin && (

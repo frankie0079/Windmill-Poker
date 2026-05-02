@@ -92,7 +92,7 @@ export function UploadButtons() {
         aria-label="Foto aus Mediathek hochladen"
       >
         <span style={{ fontSize: 16, lineHeight: 1 }}>🖼️</span>
-        Mediathek
+        Upload
       </button>
       {error && (
         <div
