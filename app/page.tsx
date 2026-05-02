@@ -51,7 +51,7 @@ async function findNextGameDate(): Promise<{
       .eq("game_day_id", openSt.id),
     supabase
       .from("next_game_planning")
-      .select("id", { count: "exact", head: true })
+      .select("player_id", { count: "exact", head: true })
       .eq("game_day_id", openSt.id)
       .eq("role", "waitlist"),
   ]);
