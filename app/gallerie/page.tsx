@@ -2,6 +2,8 @@ import Link from "next/link";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { UploadButtons } from "./UploadButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +24,17 @@ function publicUrl(path: string) {
 }
 
 export default async function GalleriePage() {
-  const { data } = await supabase
-    .from("gallery_photos")
-    .select("id,storage_path,comment")
-    .order("created_at", { ascending: false });
+  const [{ data }, authClient] = await Promise.all([
+    supabase
+      .from("gallery_photos")
+      .select("id,storage_path,comment")
+      .order("created_at", { ascending: false }),
+    createSupabaseServerClient(),
+  ]);
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+  const isAdmin = !!user;
 
   const photos = (data ?? []) as Photo[];
 
@@ -51,38 +60,35 @@ export default async function GalleriePage() {
             {photos.length} {photos.length === 1 ? "Foto" : "Fotos"}
           </div>
         </div>
-        {/* Kamera-Button: später admin-only, vorerst sichtbar */}
-        <button
-          type="button"
-          className="inline-flex items-center font-oswald uppercase font-semibold"
-          style={{
-            gap: 8,
-            padding: "10px 16px",
-            background: "#C94A2B",
-            color: "#F2E7CE",
-            border: "2px solid #0E1A1A",
-            borderRadius: 24,
-            fontSize: 12,
-            letterSpacing: "0.12em",
-            cursor: "pointer",
-          }}
-        >
-          <span style={{ fontSize: 18, lineHeight: 1 }}>📸</span>
-          Kamera
-        </button>
+        {isAdmin ? (
+          <UploadButtons />
+        ) : (
+          <Link
+            href="/admin/login"
+            className="font-oswald uppercase font-semibold text-rust"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              textDecoration: "underline",
+            }}
+          >
+            Login zum Hochladen
+          </Link>
+        )}
       </div>
 
-      <div
-        className="text-mist italic"
-        style={{
-          margin: "6px 14px 0",
-          fontSize: 10,
-          lineHeight: 1.4,
-        }}
-      >
-        Kamera-Button öffnet die iPhone-Kamera (Admin). Nach dem Auslösen
-        erscheint das Foto hier.
-      </div>
+      {isAdmin && (
+        <div
+          className="text-mist italic"
+          style={{
+            margin: "6px 14px 0",
+            fontSize: 10,
+            lineHeight: 1.4,
+          }}
+        >
+          Foto aufnehmen oder aus Mediathek hochladen.
+        </div>
+      )}
 
       {photos.length === 0 ? (
         <div
