@@ -22,7 +22,7 @@ LOGO_W, LOGO_H = LOGO.size  # 282, 400
 CREAM = (242, 231, 206, 255)
 
 
-def make_icon(size: int, logo_scale: float = 0.95, bg=CREAM) -> Image.Image:
+def make_icon(size: int, logo_scale: float = 1.0, bg=CREAM) -> Image.Image:
     canvas = Image.new("RGBA", (size, size), bg)
     target_h = int(size * logo_scale)
     target_w = int(target_h * LOGO_W / LOGO_H)
