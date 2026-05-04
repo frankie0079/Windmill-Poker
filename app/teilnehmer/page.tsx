@@ -1,60 +1,17 @@
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/lib/supabase";
+import {
+  loadUpcomingGame,
+  type UpcomingPlayer,
+  type UpcomingWaitlistEntry,
+} from "@/lib/upcoming-game";
 
 export const dynamic = "force-dynamic";
 
 function fmtDate(iso: string) {
   const [y, m, d] = iso.split("-");
   return `${d}.${m}.${y}`;
-}
-
-type ParticipantRow = {
-  player: { id: string; name: string };
-};
-
-type WaitlistRow = {
-  waitlist_rank: number | null;
-  player: { id: string; name: string };
-};
-
-async function loadPlanning() {
-  // Der offene ST IST der nächste Spieltag. Teilnehmer = attendances.
-  const { data: gd } = await supabase
-    .from("game_days")
-    .select("id,played_on")
-    .eq("is_closed", false)
-    .order("played_on", { ascending: false })
-    .limit(1);
-
-  const openSt = gd?.[0];
-  if (!openSt) return null;
-
-  const [{ data: att }, { data: planning }, { data: ml }] = await Promise.all([
-    supabase
-      .from("attendances")
-      .select("player:players(id,name)")
-      .eq("game_day_id", openSt.id),
-    supabase
-      .from("next_game_planning")
-      .select("waitlist_rank,player:players(id,name)")
-      .eq("game_day_id", openSt.id)
-      .eq("role", "waitlist"),
-    supabase.from("moneylist").select("id,total_winnings"),
-  ]);
-
-  const winningsById: Record<string, number> = {};
-  for (const r of ml ?? []) winningsById[r.id] = r.total_winnings;
-
-  const participants = ((att ?? []) as unknown as ParticipantRow[]).sort(
-    (a, b) =>
-      (winningsById[b.player.id] ?? 0) - (winningsById[a.player.id] ?? 0)
-  );
-  const waitlist = ((planning ?? []) as unknown as WaitlistRow[]).sort(
-    (a, b) => (a.waitlist_rank ?? 99) - (b.waitlist_rank ?? 99)
-  );
-
-  return { date: openSt.played_on, participants, waitlist };
 }
 
 function PosBadge({
@@ -105,8 +62,35 @@ function RangPill({ rank }: { rank: number }) {
   );
 }
 
+async function loadDisplayData(): Promise<{
+  date: string;
+  participants: UpcomingPlayer[];
+  waitlist: UpcomingWaitlistEntry[];
+} | null> {
+  const upcoming = await loadUpcomingGame();
+  if (!upcoming) return null;
+
+  // Teilnehmer im Deckblatt-Sub sind die effektiven Teilnehmer (confirmed +
+  // automatisch nachgerückt), sortiert nach Gesamt-Gewinnen.
+  const { data: ml } = await supabase
+    .from("moneylist")
+    .select("id,total_winnings");
+  const winningsById: Record<string, number> = {};
+  for (const r of ml ?? []) winningsById[r.id] = r.total_winnings;
+
+  const participants = [...upcoming.effectiveParticipants].sort(
+    (a, b) => (winningsById[b.id] ?? 0) - (winningsById[a.id] ?? 0),
+  );
+
+  return {
+    date: upcoming.iso,
+    participants,
+    waitlist: upcoming.remainingWaitlist,
+  };
+}
+
 export default async function TeilnehmerPage() {
-  const data = await loadPlanning();
+  const data = await loadDisplayData();
 
   return (
     <PhoneFrame activeTab={null}>
@@ -140,13 +124,13 @@ export default async function TeilnehmerPage() {
                     ? undefined
                     : "1px solid rgba(14,26,26,0.12)";
                   return (
-                    <tr key={p.player.id}>
+                    <tr key={p.id}>
                       <td
                         className="font-oswald font-semibold"
                         style={{ padding: "8px 0", borderBottom: border }}
                       >
                         <PosBadge num={i + 1} variant="participant" />
-                        {p.player.name}
+                        {p.name}
                       </td>
                       <td style={{ borderBottom: border }} />
                     </tr>
@@ -188,13 +172,13 @@ export default async function TeilnehmerPage() {
                       ? undefined
                       : "1px solid rgba(14,26,26,0.12)";
                     return (
-                      <tr key={w.player.id}>
+                      <tr key={w.id}>
                         <td
                           className="font-oswald font-semibold"
                           style={{ padding: "8px 0", borderBottom: border }}
                         >
                           <PosBadge num={pos} variant="waitlist" />
-                          {w.player.name}
+                          {w.name}
                         </td>
                         <td
                           className="text-right"
@@ -203,7 +187,7 @@ export default async function TeilnehmerPage() {
                             borderBottom: border,
                           }}
                         >
-                          <RangPill rank={w.waitlist_rank ?? 0} />
+                          <RangPill rank={w.rank} />
                         </td>
                       </tr>
                     );

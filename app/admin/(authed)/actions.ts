@@ -36,6 +36,18 @@ export async function saveRound(
     }
   }
 
+  // State-A→B-Übergang: vor dem ersten Speichern beschreibt das Planning den
+  // offenen ST selbst. Sobald Ergebnisse erfasst werden, wird der Spieltag
+  // historisch und das Planning soll von jetzt an den ÜBERNÄCHSTEN ST
+  // beschreiben (Frank plant ST X+2). Reset: Cancelled-Participants und alle
+  // Wartelistler löschen, sodass die Confirmed-Participants als Starter für
+  // die nächste Planung übrig bleiben.
+  const { count: priorResultsCount } = await supabase
+    .from("round_results")
+    .select("*", { count: "exact", head: true })
+    .eq("game_day_id", gameDayId);
+  const isFirstSave = (priorResultsCount ?? 0) === 0;
+
   const { error: delErr } = await supabase
     .from("round_results")
     .delete()
@@ -51,6 +63,24 @@ export async function saveRound(
   }));
   const { error: insErr } = await supabase.from("round_results").insert(rows);
   if (insErr) throw new Error(insErr.message);
+
+  if (isFirstSave) {
+    // Wartelistler löschen.
+    const { error: wlErr } = await supabase
+      .from("next_game_planning")
+      .delete()
+      .eq("game_day_id", gameDayId)
+      .eq("role", "waitlist");
+    if (wlErr) throw new Error(wlErr.message);
+    // Cancelled-Participants löschen — die haben den Spieltag nicht gespielt.
+    const { error: cancErr } = await supabase
+      .from("next_game_planning")
+      .delete()
+      .eq("game_day_id", gameDayId)
+      .eq("role", "participant")
+      .eq("status", "cancelled");
+    if (cancErr) throw new Error(cancErr.message);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/naechster");

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { Countdown } from "@/components/Countdown";
-import { supabase } from "@/lib/supabase";
+import { loadUpcomingGame } from "@/lib/upcoming-game";
 
 export const dynamic = "force-dynamic";
 
@@ -25,46 +25,15 @@ function fmtWeekday(iso: string) {
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 }
 
-async function findNextGameDate(): Promise<{
-  iso: string;
-  participants: number;
-  waitlist: number;
-} | null> {
-  // Der offene ST IST der nächste Spieltag — sein played_on ist das Datum,
-  // seine attendances sind die Teilnehmer. (Lifecycle: closeAndStartNext legt
-  // beim Abschluss eines STs den neuen offenen ST inkl. attendances aus
-  // next_game_planning an.)
-  const { data } = await supabase
-    .from("game_days")
-    .select("id,played_on")
-    .eq("is_closed", false)
-    .order("played_on", { ascending: false })
-    .limit(1);
-
-  const openSt = data?.[0];
-  if (!openSt) return null;
-
-  const [att, wait] = await Promise.all([
-    supabase
-      .from("attendances")
-      .select("id", { count: "exact", head: true })
-      .eq("game_day_id", openSt.id),
-    supabase
-      .from("next_game_planning")
-      .select("player_id", { count: "exact", head: true })
-      .eq("game_day_id", openSt.id)
-      .eq("role", "waitlist"),
-  ]);
-
-  return {
-    iso: openSt.played_on,
-    participants: att.count ?? 0,
-    waitlist: wait.count ?? 0,
-  };
-}
-
 export default async function Deckblatt() {
-  const next = await findNextGameDate();
+  const upcoming = await loadUpcomingGame();
+  const next = upcoming
+    ? {
+        iso: upcoming.iso,
+        participants: upcoming.effectiveParticipants.length,
+        waitlist: upcoming.remainingWaitlist.length,
+      }
+    : null;
   // Default-Zielzeit: 19:15 lokal, wenn ein Datum existiert.
   const targetIso = next ? `${next.iso}T19:15:00` : null;
 

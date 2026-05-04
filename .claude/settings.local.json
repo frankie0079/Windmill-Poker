@@ -38,7 +38,17 @@
       "Read(//tmp/**)",
       "Bash(curl -s \"http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__111h_pr._.css\" -o /tmp/css.txt)",
       "Bash(curl -s \"http://localhost:3000/spieler/dd9b11e5-535f-4b44-8791-9ec9363f304c?v=$\\(date +%s\\)\" -o /tmp/y.html)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npm run *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "WebFetch(domain:windmill-poker-psj1.vercel.app)",
+      "PowerShell(Set-Clipboard *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx next *)",
+      "Bash(npx eslint *)",
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\frank\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--DEV-sandbox-Superpowers-Trial-one\\\\\\\\7b7081b5-8857-44fc-b030-fe3538c18bb4\\\\\\\\tasks\\\\\\\\bho0xsw2a.output)"
     ]
   },
   "hooks": {

@@ -21,10 +21,10 @@ type PlanRow = {
 export default async function NaechsterPage() {
   const supabase = await createSupabaseServerClient();
 
-  // Letzter (jüngster) Spieltag — der trägt die Planung für den nächsten.
+  // Letzter (jüngster) Spieltag — der trägt die Planung.
   const { data: latestArr } = await supabase
     .from("game_days")
-    .select("id, played_on, next_game_date")
+    .select("id, played_on, next_game_date, is_closed")
     .order("played_on", { ascending: false })
     .limit(1);
   const latest = latestArr?.[0];
@@ -49,6 +49,21 @@ export default async function NaechsterPage() {
     );
   }
 
+  // Mode-Detection:
+  // State A = offener ST ohne round_results. Planning beschreibt diesen ST
+  //   selbst, Datum-Input ändert played_on, kein Abschließen-Button.
+  // State B = closed ST oder offen + Results vorhanden. Planning beschreibt
+  //   den NÄCHSTEN (zu erstellenden) ST, Datum-Input setzt next_game_date,
+  //   Abschließen-Button erstellt den neuen ST.
+  let isStateA = false;
+  if (!latest.is_closed) {
+    const { count: rrCount } = await supabase
+      .from("round_results")
+      .select("*", { count: "exact", head: true })
+      .eq("game_day_id", latest.id);
+    isStateA = (rrCount ?? 0) === 0;
+  }
+
   const { data: planRaw } = await supabase
     .from("next_game_planning")
     .select(
@@ -57,7 +72,6 @@ export default async function NaechsterPage() {
     .eq("game_day_id", latest.id)
     .order("role", { ascending: true })
     .order("waitlist_rank", { ascending: true });
-  // Inaktive Spieler raus — sie sollen nicht in der Planung auftauchen.
   const plan = ((planRaw ?? []) as unknown as PlanRow[]).filter(
     (p) => p.players?.is_active === true,
   );
@@ -69,19 +83,32 @@ export default async function NaechsterPage() {
 
   const confirmedCount = participants.filter((p) => p.status === "confirmed").length;
   const cancelledCount = participants.filter((p) => p.status === "cancelled").length;
-  // Nachrück-Logik: die ersten {cancelledCount} Wartelistler rücken nach.
   const promotedPlayerIds = new Set(
     waitlist.slice(0, cancelledCount).map((w) => w.player_id),
   );
   const effectiveCount = confirmedCount + promotedPlayerIds.size;
-  const isReady = effectiveCount >= participants.length;
+  // Nicht-leere Liste UND alle Plätze besetzt (cancelled durch Wartelistler
+  // ersetzt). Mit 0 Teilnehmern ist nichts "bereit" — sonst wäre der Status
+  // bei leerer Planung trügerisch grün.
+  const isReady = participants.length > 0 && effectiveCount >= participants.length;
 
-  const initialDate = latest.next_game_date ?? "";
-  const currentDateLabel = new Date(latest.played_on).toLocaleDateString("de-DE");
+  // Datum, das der Date-Input rendert: in State A das played_on des offenen
+  // STs (Frank kann verschieben), in State B das next_game_date.
+  const initialDate = isStateA
+    ? latest.played_on
+    : (latest.next_game_date ?? "");
   const promotedNames = waitlist
     .filter((w) => promotedPlayerIds.has(w.player_id))
     .map((w) => w.players?.name ?? "?")
     .join(", ");
+
+  // In State A planen wir den ST der GERADE als latest existiert (stNumber),
+  // in State B den noch nicht existenten ST danach (stNumber + 1).
+  const planningStNumber = isStateA ? stNumber : stNumber + 1;
+  const stNumberHeader = isStateA
+    ? `ST ${stNumber}`
+    : `ST ${stNumber} → ST ${stNumber + 1}`;
+  const headline = "NÄCHSTER SPIELTAG";
 
   return (
     <PhoneFrame activeTab="admin">
@@ -96,13 +123,13 @@ export default async function NaechsterPage() {
         }}
       >
         <div className="font-alfa text-forest" style={{ fontSize: 17 }}>
-          NÄCHSTER SPIELTAG
+          {headline}
         </div>
         <div
           className="font-oswald text-mist"
           style={{ fontSize: 12, letterSpacing: "0.08em" }}
         >
-          ST {stNumber} → ST {stNumber + 1}
+          {stNumberHeader}
         </div>
       </div>
 
@@ -117,7 +144,7 @@ export default async function NaechsterPage() {
             className="font-oswald uppercase text-forest font-semibold"
             style={{ fontSize: 11, letterSpacing: "0.12em" }}
           >
-            Teilnehmer ST {stNumber + 1}
+            Teilnehmer ST {planningStNumber}
           </div>
           <div
             className="font-oswald text-mist"
@@ -142,44 +169,46 @@ export default async function NaechsterPage() {
         </table>
       </div>
 
-      <div style={{ padding: "8px 14px 4px" }}>
-        <div
-          className="flex items-baseline justify-between"
-          style={{ marginBottom: 4, marginTop: 6 }}
-        >
+      {waitlist.length > 0 && (
+        <div style={{ padding: "8px 14px 4px" }}>
           <div
-            className="font-oswald uppercase font-semibold"
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.12em",
-              color: "#C94A2B",
-            }}
+            className="flex items-baseline justify-between"
+            style={{ marginBottom: 4, marginTop: 6 }}
           >
-            Warteliste
+            <div
+              className="font-oswald uppercase font-semibold"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                color: "#C94A2B",
+              }}
+            >
+              Warteliste
+            </div>
+            <div
+              className="text-mist italic"
+              style={{ fontSize: 10 }}
+            >
+              Rang manuell wählen
+            </div>
           </div>
-          <div
-            className="text-mist italic"
-            style={{ fontSize: 10 }}
-          >
-            Rang manuell wählen
-          </div>
+          <table className="w-full border-collapse" style={{ fontSize: 13 }}>
+            <tbody>
+              {waitlist.map((w, i) => (
+                <WaitlistRow
+                  key={w.player_id}
+                  gameDayId={latest.id}
+                  playerId={w.player_id}
+                  name={w.players?.name ?? "?"}
+                  rank={(w.waitlist_rank ?? (i + 1)) as 1 | 2 | 3}
+                  promoted={promotedPlayerIds.has(w.player_id)}
+                  isLast={i === waitlist.length - 1}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
-        <table className="w-full border-collapse" style={{ fontSize: 13 }}>
-          <tbody>
-            {waitlist.map((w, i) => (
-              <WaitlistRow
-                key={w.player_id}
-                gameDayId={latest.id}
-                playerId={w.player_id}
-                name={w.players?.name ?? "?"}
-                rank={(w.waitlist_rank ?? (i + 1)) as 1 | 2 | 3}
-                promoted={promotedPlayerIds.has(w.player_id)}
-                isLast={i === waitlist.length - 1}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      )}
 
       <div
         style={{
@@ -232,40 +261,62 @@ export default async function NaechsterPage() {
         </Link>
       </div>
 
-      <div
-        style={{
-          margin: "10px 14px 14px",
-          paddingTop: 12,
-          borderTop: "1px dashed rgba(14,26,26,0.25)",
-        }}
-      >
+      {!isStateA && (
         <div
-          className="text-mist"
           style={{
-            fontSize: 11,
-            lineHeight: 1.4,
-            textAlign: "center",
-            marginBottom: 8,
+            margin: "10px 14px 14px",
+            paddingTop: 12,
+            borderTop: "1px dashed rgba(14,26,26,0.25)",
           }}
         >
-          Schließt Spieltag {stNumber} ({currentDateLabel}) ab. Spieltag{" "}
-          {stNumber + 1}
-          {initialDate
-            ? ` (${new Date(initialDate).toLocaleDateString("de-DE")})`
-            : ""}{" "}
-          wird automatisch angelegt.
+          <div
+            className="text-mist"
+            style={{
+              fontSize: 11,
+              lineHeight: 1.4,
+              textAlign: "center",
+              marginBottom: 8,
+            }}
+          >
+            Schließt Spieltag {stNumber} (
+            {new Date(latest.played_on).toLocaleDateString("de-DE")}) ab.
+            Spieltag {stNumber + 1}
+            {initialDate
+              ? ` (${new Date(initialDate).toLocaleDateString("de-DE")})`
+              : ""}{" "}
+            wird automatisch angelegt.
+          </div>
+          <CloseGameDayButton
+            gameDayId={latest.id}
+            disabledReason={
+              !latest.next_game_date
+                ? "Bitte zuerst ein Datum für den nächsten Spieltag eingeben."
+                : effectiveCount === 0
+                  ? "Keine bestätigten Teilnehmer."
+                  : null
+            }
+          />
         </div>
-        <CloseGameDayButton
-          gameDayId={latest.id}
-          disabledReason={
-            !latest.next_game_date
-              ? "Bitte zuerst ein Datum für den nächsten Spieltag eingeben."
-              : effectiveCount === 0
-                ? "Keine bestätigten Teilnehmer."
-                : null
-          }
-        />
-      </div>
+      )}
+
+      {isStateA && (
+        <div
+          style={{
+            margin: "10px 14px 14px",
+            paddingTop: 12,
+            borderTop: "1px dashed rgba(14,26,26,0.25)",
+            textAlign: "center",
+          }}
+        >
+          <div
+            className="text-mist"
+            style={{ fontSize: 11, lineHeight: 1.4 }}
+          >
+            Anpassungen sind bis zum Spielabend möglich. R1 + R2 dann in der
+            Eingabe-Maske.
+          </div>
+        </div>
+      )}
     </PhoneFrame>
   );
 }
