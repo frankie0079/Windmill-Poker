@@ -98,14 +98,37 @@ export default async function GalleriePage() {
               href={`/gallerie/${p.id}`}
               className="block overflow-hidden"
               style={{
-                aspectRatio: "1 / 1",
                 border: "2px solid #0E1A1A",
                 borderRadius: 8,
-                background: p.storage_path
-                  ? `center/cover no-repeat url(${publicUrl(p.storage_path)})`
-                  : TILE_GRADIENTS[i % TILE_GRADIENTS.length],
+                background: "rgba(255,255,255,0.45)",
+                textDecoration: "none",
               }}
-            />
+            >
+              <div
+                style={{
+                  aspectRatio: "1 / 1",
+                  background: p.storage_path
+                    ? `center/cover no-repeat url(${publicUrl(p.storage_path)})`
+                    : TILE_GRADIENTS[i % TILE_GRADIENTS.length],
+                }}
+              />
+              <div
+                className="font-work text-ink"
+                style={{
+                  minHeight: 30,
+                  boxSizing: "border-box",
+                  padding: "4px 6px",
+                  borderTop: "2px solid #0E1A1A",
+                  background: "#F2E7CE",
+                  fontSize: 8,
+                  lineHeight: 1.15,
+                  fontWeight: 400,
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {p.comment ?? ""}
+              </div>
+            </Link>
           ))}
         </div>
       )}

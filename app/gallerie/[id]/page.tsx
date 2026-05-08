@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { GalleryCommentEditor } from "./GalleryCommentEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +18,18 @@ export default async function FotoDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { data } = await supabase
-    .from("gallery_photos")
-    .select("id,storage_path,comment")
-    .eq("id", id)
-    .single();
+  const [{ data }, authClient] = await Promise.all([
+    supabase
+      .from("gallery_photos")
+      .select("id,storage_path,comment")
+      .eq("id", id)
+      .single(),
+    createSupabaseServerClient(),
+  ]);
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+  const isAdmin = !!user;
 
   if (!data) notFound();
 
@@ -78,43 +87,36 @@ export default async function FotoDetail({
         >
           Kommentar
         </div>
-        <div
-          className="font-work text-ink"
-          style={{ fontSize: 14, lineHeight: 1.4, fontWeight: 500 }}
-        >
-          {data.comment || (
-            <span className="text-mist italic">Kein Kommentar.</span>
-          )}
-        </div>
-        <div className="flex justify-end" style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            className="font-oswald uppercase font-semibold text-forest"
-            style={{
-              padding: "6px 12px",
-              background: "transparent",
-              border: "2px solid #1E4A3C",
-              borderRadius: 6,
-              fontSize: 10,
-              letterSpacing: "0.1em",
-              cursor: "pointer",
-            }}
+
+        {isAdmin ? (
+          <GalleryCommentEditor
+            photoId={data.id}
+            initialComment={data.comment ?? ""}
+          />
+        ) : (
+          <div
+            className="font-work text-ink"
+            style={{ fontSize: 14, lineHeight: 1.4, fontWeight: 500 }}
           >
-            ✎ Bearbeiten
-          </button>
-        </div>
+            {data.comment || (
+              <span className="text-mist italic">Kein Kommentar.</span>
+            )}
+          </div>
+        )}
       </div>
 
-      <div
-        className="text-mist italic"
-        style={{
-          margin: "0 14px 14px",
-          fontSize: 10,
-          lineHeight: 1.4,
-        }}
-      >
-        Bearbeiten/Löschen nur für Admin. Leser sehen Foto + Kommentar.
-      </div>
+      {isAdmin && (
+        <div
+          className="text-mist italic"
+          style={{
+            margin: "0 14px 14px",
+            fontSize: 10,
+            lineHeight: 1.4,
+          }}
+        >
+          Bearbeiten nur für Admin. Leser sehen Foto + Kommentar.
+        </div>
+      )}
     </PhoneFrame>
   );
 }
