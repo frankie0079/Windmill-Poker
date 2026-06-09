@@ -6,6 +6,7 @@ import { DateInput } from "./DateInput";
 import { ParticipantRow } from "./ParticipantRow";
 import { WaitlistRow } from "./WaitlistRow";
 import { CloseGameDayButton } from "./CloseGameDayButton";
+import { ExcelBackupButton } from "./ExcelBackupButton";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,11 @@ export default async function NaechsterPage() {
     ? `ST ${stNumber}`
     : `ST ${stNumber} → ST ${stNumber + 1}`;
   const headline = "NÄCHSTER SPIELTAG";
+  const excelBackupConfigured = Boolean(
+    process.env.GOOGLE_DRIVE_EXCEL_FILE_ID &&
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+  );
 
   return (
     <PhoneFrame activeTab="admin">
@@ -259,6 +265,10 @@ export default async function NaechsterPage() {
         >
           ⚙ Spielerverwaltung
         </Link>
+      </div>
+
+      <div style={{ padding: "4px 14px 4px" }}>
+        <ExcelBackupButton configured={excelBackupConfigured} />
       </div>
 
       {!isStateA && (

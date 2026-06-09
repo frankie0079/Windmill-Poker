@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { updateGoogleDriveExcelBackup } from "@/lib/excel-backup";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -168,6 +169,25 @@ export async function setWaitlistRank(
 
   await syncAttendancesIfStateA(supabase, gameDayId);
   revalidateAll();
+}
+
+export async function updateExcelBackup(): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await requireAdmin();
+    const result = await updateGoogleDriveExcelBackup(supabase);
+    return { ok: true, message: result.message };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Excel-Backup konnte nicht aktualisiert werden",
+    };
+  }
 }
 
 // Lifecycle State B → State A: erstellt den nächsten game_day und migriert die

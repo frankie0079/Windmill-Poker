@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Windmill Poker",
-    short_name: "Windmill Poker",
+    short_name: "Windmill",
     description: "Score-Tracker für Windmill Poker",
     start_url: "/",
     display: "standalone",

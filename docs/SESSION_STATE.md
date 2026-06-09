@@ -2,8 +2,8 @@
 
 > Wird am Ende jeder Session aktualisiert. Beim Start als erstes lesen.
 
-**Letzte Session:** 2026-05-01
-**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (Phase 5 — Admin-Bereich komplett, Spielabend-Lifecycle UI-gestützt)
+**Letzte Session:** 2026-06-09
+**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (PWA + Google-Drive-Excel-Backup produktiv)
 
 ## Wo wir stehen
 
@@ -12,9 +12,26 @@
 - **Phase 3 Seed-Import** ✓ abgeschlossen. Re-Seed v2 aus Auszahlungen-Sheet (11 STs inkl. ST11 19.02.26).
 - **Phase 4 Next.js-Skeleton** ✓ abgeschlossen.
 - **Phase 5 Frontend-Implementierung** ✓ **vollständig fertig**. Alle Read-Screens + Admin-Bereich (Login, Eingabe, Nächster, Spielerverwaltung) stehen mockup-treu. Spielabend-Lifecycle ist über die UI bedienbar.
-- **Phase 6 Deploy + PWA** offen. Vercel + next-pwa + Service Worker + iPhone-Home-Screen-Icon. ~1–2 Std.
+- **Phase 6 Deploy + PWA** ✓ produktiv auf `https://windmill-poker-psj1.vercel.app`.
+- **Google-Drive-Excel-Backup** ✓ produktiv eingerichtet und mit ST14 live getestet.
 
-Realistische Schätzung: ~95 % des Gesamtwegs erledigt.
+Realistische Schätzung: Kernprodukt und Excel-Backup sind produktiv.
+
+## Heute erledigt (2026-06-09)
+
+- Google Cloud-Projekt `Windmill Poker backup`, Drive API und
+  Computerprogramm-Konto eingerichtet.
+- `Windmill_Poker_results.xlsx` für das Computerprogramm-Konto freigegeben.
+- Server-seitiges, idempotentes Excel-Backup implementiert: neuester
+  vollständiger Spieltag aus Supabase, Eingabemaske, Spieltagsspalte, Summen
+  und Teilnahmen werden aktualisiert.
+- Dauerhaft sichtbaren Button `Excel-Backup aktualisieren` auf
+  `/admin/naechster` ergänzt.
+- ST14 vom 07.05.2026 erfolgreich live in Google Drive aktualisiert und geprüft:
+  8 Teilnehmer, R1 160 €, R2 160 €, Gesamt 320 €, ST14 genau einmal vorhanden.
+- Aktives Vercel-Projekt identifiziert: `windmill-poker-psj1`. Google-Variablen
+  für Production gesetzt und neue Version veröffentlicht.
+- PWA-Manifest, Icons, Service Worker und Sicherheitsheader produktiv ausgerollt.
 
 ## Heute erledigt (2026-05-01)
 
@@ -69,11 +86,12 @@ Realistische Schätzung: ~95 % des Gesamtwegs erledigt.
 
 Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 
-0. **BUG (Top-Prio): Deckblatt `/` zeigt „noch nicht geplant"** — `app/page.tsx` Zeile 37 filtert `is_closed=false`, aber alle STs sind closed. Fix: das `.eq("is_closed", false)` raus, dann ist jüngster ST mit `next_game_date` der Anker. ~5 Min.
-1. **Phase 6: Vercel-Deploy + next-pwa + iPhone-Home-Screen-Icon** (Hauptfokus, ~1–2 Std).
-2. **Bar-Chart visuell prüfen** mit ST 12 + 13 Daten (~10 Min).
+0. **BUG erledigt/obsolet:** Deckblatt `/` liest den nächsten Spieltag über `loadUpcomingGame()` und filtert nicht mehr auf `is_closed=false`. Live-Check am 2026-05-29 zeigt ST 2026-06-11 mit 8 Teilnehmern + 2 Warteliste.
+1. **Optional aufräumen:** Das alte, falsch konfigurierte Vercel-Projekt
+   `windmill-poker` liefert 404. Aktive PWA ist `windmill-poker-psj1`; nicht
+   ungeprüft löschen oder Alias übertragen.
+2. **Bar-Chart visuell prüfen** mit aktuellen Daten (~10 Min).
 3. **Storage-Bucket-Migration** beim nächsten Setup robuster machen.
-4. **Erster echter Lifecycle-Test am 07.05.2026** — bis dahin keine Trockenläufe von "Spieltag abschließen", sonst landet ST 14 ungewollt in der DB.
 
 ## Supabase
 
@@ -82,7 +100,8 @@ Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 - **Project Ref:** `dcqsvquklwjfhmsfpodo`
 - **Auth:** Frank (Email + Passwort) als einziger Admin-User. Andere User via Supabase Auth Dashboard, RLS authenticated-only schützt alle Schreib-Operationen.
 - **Anon-Key, Service-Role-Key, NEXT_PUBLIC_SUPABASE_URL/ANON_KEY:** in `.env.local` (gitignored).
-- **DB-Stand:** 13 game_days, alle is_closed=true. ST 13 (2026-04-16) ist jüngster, trägt next_game_date=2026-05-07 + next_game_planning für ST 14.
+- **DB-Stand:** ST14 (2026-05-07) vollständig erfasst; ST15 (2026-06-11) offen
+  und mit Teilnehmerplanung angelegt.
 - **Helper-Skripte:** `scripts/admin_open_st.py` + `rewire_planning.py` (für Cleanup / einmalige rückwirkende Eingaben). `seed_v2.py` + `verify_v2.py` für Initial-Seed.
 
 ## Frontend-Stack
@@ -106,6 +125,14 @@ Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 - **Server-Skript:** `C:\DEV\sandbox\superpowers-framework\skills\brainstorming\scripts\start-server.sh`
 - **Letzte Session-Dir:** `.superpowers/brainstorm/801-1777469477/`
 - **Hinweis:** Mockups jetzt redundant in `docs/mockups/`, brainstorm-Dirs nur noch für Workflow-Historie.
+
+## Produktion
+
+- **Aktive URL:** `https://windmill-poker-psj1.vercel.app`
+- **Aktives Vercel-Projekt:** `windmill-poker-psj1`
+- **Altes Vercel-Projekt:** `windmill-poker`, Framework `Other`, derzeit 404
+- **Excel-Backup:** Google-Drive-Zugangsdaten in Vercel Production gesetzt;
+  Details in `docs/GOOGLE_DRIVE_EXCEL_BACKUP.md`
 
 ## Hinweis an mich (Claude)
 

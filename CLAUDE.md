@@ -51,7 +51,7 @@ Auth-Guard:
 - `/admin/login` liegt **außerhalb** der Route Group, sonst würde der Guard ihn auch blocken.
 - Service-Role-Key in `.env.local` als `SUPABASE_SERVICE_ROLE_KEY` für Skripte (`scripts/admin_open_st.py` etc.) — umgeht RLS, niemals im Frontend benutzen.
 
-## Excel als Datenquelle (`Windmill_Poker_results_test.xlsx`)
+## Excel als Datenquelle und Google-Drive-Backup
 
 **Source of Truth = Sheet "Auszahlungen"**, nicht "2025". Auszahlungen hat alle 12+ STs
 horizontal mit Σ + €/Spt + Teilnahmen.
@@ -72,9 +72,24 @@ Helper-Skripte für nachträgliche STs / Cleanup:
 - `scripts/admin_open_st.py open|close|delete --date YYYY-MM-DD [--players ...]`
 - `scripts/rewire_planning.py --from --to --next` — verschiebt next_game_planning + next_game_date
 
-## Daten-Stand (2026-05-01)
+Produktives Excel-Backup:
+- Datei: `Windmill_Poker_results.xlsx` in Franks Google Drive.
+- Button: `/admin/naechster` → `Excel-Backup aktualisieren`, dauerhaft sichtbar.
+- Der Server liest den neuesten vollständig erfassten Spieltag aus Supabase,
+  aktualisiert Eingabemaske, Spieltagsspalte, Summen und Teilnahmen und ersetzt
+  anschließend dieselbe `.xlsx`-Datei in Google Drive.
+- Wiederholtes Klicken ist idempotent: Ein vorhandener ST wird aktualisiert,
+  nicht doppelt angelegt.
+- Google-Zugriff erfolgt über ein Computerprogramm-Konto (Google-Fachbegriff:
+  Service Account/Dienstkonto). Zugangsdaten nur in `.env.local` und Vercel,
+  niemals committen.
+- Technische Details: `docs/GOOGLE_DRIVE_EXCEL_BACKUP.md`.
 
-- 13 game_days in DB, alle `is_closed=true`. ST 13 (2026-04-16) ist jüngster und trägt `next_game_date=2026-05-07` + die `next_game_planning` für ST 14.
+## Daten-Stand (2026-06-09)
+
+- ST14 (2026-05-07) ist vollständig erfasst und wurde erfolgreich in das
+  Google-Drive-Excel-Backup geschrieben.
+- ST15 (2026-06-11) ist als offener nächster Spieltag mit Teilnehmerplanung angelegt.
 - ST 11 (19.02.2026) Frank-Tagessieg mit 100€.
 - ST 12 (05.03.2026) und ST 13 (16.04.2026) wurden am 2026-05-01 über die UI rückwirkend eingegeben (echte Daten).
 
@@ -110,9 +125,19 @@ Sequentiell — die UI führt Frank in dieser Reihenfolge:
 3. **/admin/naechster**: Datum für nächsten Spieltag setzen
 4. Teilnehmer-Abfrage (wer kann nicht → status=cancelled, Warteliste rückt automatisch auf)
 5. **„Spieltag abschließen"** (kein Confirm — finaler bewusster Klick): aktueller ST closed, neuer ST + attendances aus Planung angelegt, alte Planung gelöscht, Redirect zu /admin (Eingabe für neuen ST)
+6. **Excel-Backup aktualisieren:** auf `/admin/naechster` den dauerhaft sichtbaren
+   Button klicken. Er sichert den neuesten vollständig erfassten Spieltag.
 
 **UX-Regeln aus diesem Workflow:**
 - Keine Confirm-Dialogs bei bewussten Aktionen — Frank hasst sie.
 - Hinweis-Text über Buttons darf den Effekt erklären, aber knapp und zentriert.
 - Wording fokussiert auf das was abgeschlossen wird (z.B. „Spieltag 13 abschließen"), nicht auf das was startet.
 - Empty-States vermeiden, wenn ein sinnvoller Redirect-Target existiert.
+
+## Produktion
+
+- Aktive PWA: `https://windmill-poker-psj1.vercel.app`
+- Aktives Vercel-Projekt: `windmill-poker-psj1` (Framework: Next.js).
+- Das ältere Projekt `windmill-poker` ist falsch als Framework `Other`
+  konfiguriert und liefert unter `https://windmill-poker.vercel.app` aktuell 404.
+  Nicht ungeprüft löschen oder als Ziel verwenden.

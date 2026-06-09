@@ -48,7 +48,8 @@
       "Bash(echo \"exit: $?\")",
       "Bash(npx next *)",
       "Bash(npx eslint *)",
-      "Bash(cat C:\\\\\\\\Users\\\\\\\\frank\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--DEV-sandbox-Superpowers-Trial-one\\\\\\\\7b7081b5-8857-44fc-b030-fe3538c18bb4\\\\\\\\tasks\\\\\\\\bho0xsw2a.output)"
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\frank\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--DEV-sandbox-Superpowers-Trial-one\\\\\\\\7b7081b5-8857-44fc-b030-fe3538c18bb4\\\\\\\\tasks\\\\\\\\bho0xsw2a.output)",
+      "Bash(taskkill //F //IM node.exe)"
     ]
   },
   "hooks": {
