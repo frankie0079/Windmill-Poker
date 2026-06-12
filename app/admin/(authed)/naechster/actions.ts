@@ -18,6 +18,9 @@ function revalidateAll() {
   revalidatePath("/admin/naechster");
   revalidatePath("/admin");
   revalidatePath("/teilnehmer");
+  revalidatePath("/ranking");
+  revalidatePath("/spieltage");
+  revalidatePath("/spieler");
   revalidatePath("/");
 }
 
@@ -168,6 +171,75 @@ export async function setWaitlistRank(
   if (error) throw new Error(error.message);
 
   await syncAttendancesIfStateA(supabase, gameDayId);
+  revalidateAll();
+}
+
+export async function setActualAttendance(
+  gameDayId: string,
+  playerId: string,
+  present: boolean,
+) {
+  const supabase = await requireAdmin();
+  if (!(await isStateA(supabase, gameDayId))) {
+    throw new Error("Anwesenheit kann nur vor R1/R2 geaendert werden");
+  }
+
+  const { data: player, error: playerError } = await supabase
+    .from("players")
+    .select("id, is_active")
+    .eq("id", playerId)
+    .maybeSingle();
+  if (playerError) throw new Error(playerError.message);
+  if (!player?.is_active) throw new Error("Spieler ist nicht aktiv");
+
+  const { data: planRow, error: planError } = await supabase
+    .from("next_game_planning")
+    .select("role")
+    .eq("game_day_id", gameDayId)
+    .eq("player_id", playerId)
+    .maybeSingle();
+  if (planError) throw new Error(planError.message);
+
+  if (present) {
+    const { error: attendanceError } = await supabase
+      .from("attendances")
+      .upsert(
+        { game_day_id: gameDayId, player_id: playerId },
+        { onConflict: "game_day_id,player_id" },
+      );
+    if (attendanceError) throw new Error(attendanceError.message);
+
+    const { error: planningError } = await supabase
+      .from("next_game_planning")
+      .upsert(
+        {
+          game_day_id: gameDayId,
+          player_id: playerId,
+          role: "participant",
+          status: "confirmed",
+          waitlist_rank: null,
+        },
+        { onConflict: "game_day_id,player_id" },
+      );
+    if (planningError) throw new Error(planningError.message);
+  } else {
+    const { error: attendanceError } = await supabase
+      .from("attendances")
+      .delete()
+      .eq("game_day_id", gameDayId)
+      .eq("player_id", playerId);
+    if (attendanceError) throw new Error(attendanceError.message);
+
+    if (planRow?.role === "participant") {
+      const { error: planningError } = await supabase
+        .from("next_game_planning")
+        .update({ status: "cancelled" })
+        .eq("game_day_id", gameDayId)
+        .eq("player_id", playerId);
+      if (planningError) throw new Error(planningError.message);
+    }
+  }
+
   revalidateAll();
 }
 

@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { DateInput } from "./DateInput";
 import { ParticipantRow } from "./ParticipantRow";
 import { WaitlistRow } from "./WaitlistRow";
+import { ActualAttendanceRow } from "./ActualAttendanceRow";
 import { CloseGameDayButton } from "./CloseGameDayButton";
 import { ExcelBackupButton } from "./ExcelBackupButton";
 
@@ -17,6 +18,15 @@ type PlanRow = {
   status: "confirmed" | "cancelled" | null;
   waitlist_rank: 1 | 2 | 3 | null;
   players: { name: string; is_active: boolean } | null;
+};
+
+type AttendanceRow = {
+  player_id: string;
+};
+
+type ActivePlayer = {
+  id: string;
+  name: string;
 };
 
 export default async function NaechsterPage() {
@@ -76,6 +86,22 @@ export default async function NaechsterPage() {
   const plan = ((planRaw ?? []) as unknown as PlanRow[]).filter(
     (p) => p.players?.is_active === true,
   );
+  const [{ data: attendanceRaw }, { data: activePlayersRaw }] =
+    await Promise.all([
+      supabase
+        .from("attendances")
+        .select("player_id")
+        .eq("game_day_id", latest.id),
+      supabase
+        .from("players")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name", { ascending: true }),
+    ]);
+  const attendance = (attendanceRaw ?? []) as AttendanceRow[];
+  const activePlayers = (activePlayersRaw ?? []) as ActivePlayer[];
+  const presentPlayerIds = new Set(attendance.map((a) => a.player_id));
+  const planByPlayerId = new Map(plan.map((p) => [p.player_id, p]));
 
   const participants = plan.filter((p) => p.role === "participant");
   const waitlist = plan
@@ -88,10 +114,13 @@ export default async function NaechsterPage() {
     waitlist.slice(0, cancelledCount).map((w) => w.player_id),
   );
   const effectiveCount = confirmedCount + promotedPlayerIds.size;
+  const actualAttendanceCount = presentPlayerIds.size;
   // Nicht-leere Liste UND alle Plätze besetzt (cancelled durch Wartelistler
   // ersetzt). Mit 0 Teilnehmern ist nichts "bereit" — sonst wäre der Status
   // bei leerer Planung trügerisch grün.
-  const isReady = participants.length > 0 && effectiveCount >= participants.length;
+  const isReady = isStateA
+    ? actualAttendanceCount > 0
+    : participants.length > 0 && effectiveCount >= participants.length;
 
   // Datum, das der Date-Input rendert: in State A das played_on des offenen
   // STs (Frank kann verschieben), in State B das next_game_date.
@@ -216,6 +245,51 @@ export default async function NaechsterPage() {
         </div>
       )}
 
+      {isStateA && (
+        <div style={{ padding: "8px 14px 4px" }}>
+          <div
+            className="flex items-baseline justify-between"
+            style={{ marginBottom: 4, marginTop: 6 }}
+          >
+            <div
+              className="font-oswald uppercase text-forest font-semibold"
+              style={{ fontSize: 11, letterSpacing: "0.12em" }}
+            >
+              Anwesenheit am Spieltag
+            </div>
+            <div className="font-oswald text-mist" style={{ fontSize: 11 }}>
+              {actualAttendanceCount} da
+            </div>
+          </div>
+          <table className="w-full border-collapse" style={{ fontSize: 13 }}>
+            <tbody>
+              {activePlayers.map((player, index) => {
+                const planRow = planByPlayerId.get(player.id);
+                const roleLabel =
+                  planRow?.role === "waitlist"
+                    ? `Rang ${planRow.waitlist_rank}`
+                    : planRow?.status === "confirmed"
+                      ? "geplant"
+                      : planRow?.status === "cancelled"
+                        ? "abgesagt"
+                        : "frei";
+                return (
+                  <ActualAttendanceRow
+                    key={player.id}
+                    gameDayId={latest.id}
+                    playerId={player.id}
+                    name={player.name}
+                    present={presentPlayerIds.has(player.id)}
+                    roleLabel={roleLabel}
+                    isLast={index === activePlayers.length - 1}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div
         style={{
           margin: "8px 14px 6px",
@@ -236,11 +310,15 @@ export default async function NaechsterPage() {
             className="font-oswald text-forest"
             style={{ fontSize: 13, fontWeight: 700 }}
           >
-            {isReady ? "✓ Bereit" : `⚠ ${participants.length - effectiveCount} offen`}
+            {isStateA
+              ? `${actualAttendanceCount} anwesend`
+              : isReady
+                ? "✓ Bereit"
+                : `⚠ ${participants.length - effectiveCount} offen`}
           </span>
         </div>
         <div className="text-slate" style={{ fontSize: 11, marginTop: 3 }}>
-          {effectiveCount} bestätigt für{" "}
+          {isStateA ? actualAttendanceCount : effectiveCount} bestätigt für{" "}
           {initialDate
             ? new Date(initialDate).toLocaleDateString("de-DE")
             : "—"}
