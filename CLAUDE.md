@@ -85,11 +85,26 @@ Produktives Excel-Backup:
   niemals committen.
 - Technische Details: `docs/GOOGLE_DRIVE_EXCEL_BACKUP.md`.
 
-## Daten-Stand (2026-06-09)
+## Finale Anwesenheit am Spieltag
+
+Planung und tatsächliche Anwesenheit sind getrennt:
+- Vor R1/R2 zeigt `/admin/naechster` den Abschnitt `Anwesenheit am Spieltag`.
+- Dort werden alle aktiven Spieler mit `da` / `nicht da` final gesetzt.
+- Diese `attendances` sind die Quelle für `/admin` und damit für R1/R2.
+- Die automatische Nachrücklogik bleibt Planungshilfe, darf aber am Spielabend
+  nicht blind die tatsächlichen Spieler diktieren.
+- Sobald R1/R2 gespeichert sind, ist die Anwesenheit über die UI gesperrt.
+  Nachträgliche Korrekturen nur gezielt per Admin-/Service-Role-Eingriff.
+
+## Daten-Stand (2026-06-12)
 
 - ST14 (2026-05-07) ist vollständig erfasst und wurde erfolgreich in das
   Google-Drive-Excel-Backup geschrieben.
-- ST15 (2026-06-11) ist als offener nächster Spieltag mit Teilnehmerplanung angelegt.
+- ST15 (2026-06-11) ist geschlossen: 7 Teilnehmer, R1 140€, R2 140€,
+  Gesamt 280€. Ciano war dabei und hat 0/0; Jens war nicht dabei und ist in
+  Excel leer. ST15 ist in Google Drive geprüft.
+- ST16 (2026-07-02) ist offen: 8 Teilnehmer (Ciano, Frank, Friedl, Jens,
+  Jochen, Peter, Rainer, Werner). Warteliste: Jörg Rang 1, Torben Rang 2.
 - ST 11 (19.02.2026) Frank-Tagessieg mit 100€.
 - ST 12 (05.03.2026) und ST 13 (16.04.2026) wurden am 2026-05-01 über die UI rückwirkend eingegeben (echte Daten).
 
@@ -124,8 +139,10 @@ Sequentiell — die UI führt Frank in dieser Reihenfolge:
 2. R2-Tab: R2 erfassen + speichern → **Auto-Redirect** zu /admin/naechster (sobald beide Runden saved sind)
 3. **/admin/naechster**: Datum für nächsten Spieltag setzen
 4. Teilnehmer-Abfrage (wer kann nicht → status=cancelled, Warteliste rückt automatisch auf)
-5. **„Spieltag abschließen"** (kein Confirm — finaler bewusster Klick): aktueller ST closed, neuer ST + attendances aus Planung angelegt, alte Planung gelöscht, Redirect zu /admin (Eingabe für neuen ST)
-6. **Excel-Backup aktualisieren:** auf `/admin/naechster` den dauerhaft sichtbaren
+5. Am Spieltag vor R1/R2 auf `/admin/naechster` im Abschnitt
+   `Anwesenheit am Spieltag` final setzen, wer wirklich da ist.
+6. **„Spieltag abschließen"** (kein Confirm — finaler bewusster Klick): aktueller ST closed, neuer ST + attendances aus Planung angelegt, alte Planung gelöscht, Redirect zu /admin (Eingabe für neuen ST)
+7. **Excel-Backup aktualisieren:** auf `/admin/naechster` den dauerhaft sichtbaren
    Button klicken. Er sichert den neuesten vollständig erfassten Spieltag.
 
 **UX-Regeln aus diesem Workflow:**

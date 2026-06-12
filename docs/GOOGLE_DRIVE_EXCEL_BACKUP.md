@@ -25,6 +25,8 @@ GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END P
 
 ## Ablauf
 
+- Vor R1/R2 auf `/admin/naechster` die finale `Anwesenheit am Spieltag`
+  setzen. `/admin` zeigt danach genau diese Spieler.
 - Beide Runden in der PWA speichern.
 - Auf `/admin/naechster` `Excel-Backup aktualisieren` klicken.
 - Der Server prüft Vollständigkeit und Rundentöpfe, ergänzt beziehungsweise
@@ -37,4 +39,7 @@ GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END P
 - PWA: `https://windmill-poker-psj1.vercel.app`
 - Vercel-Projekt: `windmill-poker-psj1`
 - Google-Drive-Zugangsdaten sind für `Production` in Vercel hinterlegt.
-- Der erste Live-Test mit ST14 vom 07.05.2026 war erfolgreich.
+- Live-Tests:
+  - ST14 vom 07.05.2026 erfolgreich.
+  - ST15 vom 11.06.2026 erfolgreich: 7 Teilnehmer, Gesamt 280€, Ciano 0,
+    Jens/Jörg/Torben leer, ST15 genau einmal vorhanden.

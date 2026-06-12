@@ -2,8 +2,8 @@
 
 > Wird am Ende jeder Session aktualisiert. Beim Start als erstes lesen.
 
-**Letzte Session:** 2026-06-09
-**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (PWA + Google-Drive-Excel-Backup produktiv)
+**Letzte Session:** 2026-06-12
+**Branch:** `master` · **Letzter Commit:** wird nach diesem Commit aktualisiert (finale Anwesenheit + ST15/ST16 korrigiert)
 
 ## Wo wir stehen
 
@@ -13,9 +13,27 @@
 - **Phase 4 Next.js-Skeleton** ✓ abgeschlossen.
 - **Phase 5 Frontend-Implementierung** ✓ **vollständig fertig**. Alle Read-Screens + Admin-Bereich (Login, Eingabe, Nächster, Spielerverwaltung) stehen mockup-treu. Spielabend-Lifecycle ist über die UI bedienbar.
 - **Phase 6 Deploy + PWA** ✓ produktiv auf `https://windmill-poker-psj1.vercel.app`.
-- **Google-Drive-Excel-Backup** ✓ produktiv eingerichtet und mit ST14 live getestet.
+- **Google-Drive-Excel-Backup** ✓ produktiv eingerichtet und mit ST14/ST15 live getestet.
+- **Finale Anwesenheit am Spieltag** ✓ produktiv: vor R1/R2 auf
+  `/admin/naechster` echte Spieler setzen, unabhängig von automatischer
+  Nachrückplanung.
 
 Realistische Schätzung: Kernprodukt und Excel-Backup sind produktiv.
+
+## Heute erledigt (2026-06-12)
+
+- ST15 vom 11.06.2026 korrigiert: 7 Teilnehmer, Ciano als Teilnehmer mit 0/0,
+  Jens entfernt, R1 140€, R2 140€, Gesamt 280€.
+- ST15 geschlossen und ST16 für 02.07.2026 geöffnet.
+- Google-Drive-Excel `Windmill_Poker_results.xlsx` aktualisiert und geprüft:
+  ST15 genau einmal, Teilnehmer 7, Pot 280€, Ciano 0, Jens/Jörg/Torben leer.
+- ST16-Planung gesetzt: 8 feste Teilnehmer (Ciano, Frank, Friedl, Jens,
+  Jochen, Peter, Rainer, Werner), Warteliste Jörg Rang 1, Torben Rang 2.
+- Neue UI `Anwesenheit am Spieltag` auf `/admin/naechster` gebaut und deployed:
+  alle aktiven Spieler mit `da`/`nicht da`; Quelle für `/admin` R1/R2 sind
+  danach die tatsächlichen `attendances`.
+- Commit `82c359b Add final game day attendance controls` auf `master`
+  gepusht und aktiv deployed.
 
 ## Heute erledigt (2026-06-09)
 
@@ -100,8 +118,8 @@ Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 - **Project Ref:** `dcqsvquklwjfhmsfpodo`
 - **Auth:** Frank (Email + Passwort) als einziger Admin-User. Andere User via Supabase Auth Dashboard, RLS authenticated-only schützt alle Schreib-Operationen.
 - **Anon-Key, Service-Role-Key, NEXT_PUBLIC_SUPABASE_URL/ANON_KEY:** in `.env.local` (gitignored).
-- **DB-Stand:** ST14 (2026-05-07) vollständig erfasst; ST15 (2026-06-11) offen
-  und mit Teilnehmerplanung angelegt.
+- **DB-Stand:** ST15 (2026-06-11) geschlossen, 7 Teilnehmer, Gesamt 280€.
+  ST16 (2026-07-02) offen, 8 Teilnehmer, Warteliste Jörg/Torben.
 - **Helper-Skripte:** `scripts/admin_open_st.py` + `rewire_planning.py` (für Cleanup / einmalige rückwirkende Eingaben). `seed_v2.py` + `verify_v2.py` für Initial-Seed.
 
 ## Frontend-Stack
@@ -133,6 +151,9 @@ Siehe Memory `project_phase6_offene_schritte.md`. Kurz:
 - **Altes Vercel-Projekt:** `windmill-poker`, Framework `Other`, derzeit 404
 - **Excel-Backup:** Google-Drive-Zugangsdaten in Vercel Production gesetzt;
   Details in `docs/GOOGLE_DRIVE_EXCEL_BACKUP.md`
+- **Spielabend-Korrekturen:** Vor R1/R2 die finale Anwesenheit auf
+  `/admin/naechster` setzen. Nicht mehr voraussetzen, dass immer 8 Spieler
+  kommen oder dass Wartelistler automatisch in Reihenfolge nachrücken.
 
 ## Hinweis an mich (Claude)
 
@@ -146,3 +167,5 @@ Beim nächsten Start:
 - Mockup-Pixel-Treue ist nicht verhandelbar (`docs/mockups/*.html` = Source of Truth) — außer Frank korrigiert explizit (z.B. BackButton-Tausch in Spielerverwaltung).
 - Excel-Source-of-Truth = Sheet "Auszahlungen" (CLAUDE.md hat Regeln dazu).
 - **Frank's Workflow: keine Confirm-Dialogs bei klaren Aktionen.** Lieber gut platzierter Hinweis-Text + sofortige Action. Sequentielle Flows mit Auto-Redirects.
+- Wenn Frank reale Spielabend-Abweichungen meldet, zuerst DB und Excel
+  konkret prüfen, dann gezielt korrigieren. Planung != tatsächliche Anwesenheit.
