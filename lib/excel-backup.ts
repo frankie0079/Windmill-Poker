@@ -244,7 +244,7 @@ export function updateExcelWorkbook(buffer: Buffer, game: BackupGame) {
       // Freeze the prior game day, which may still be linked to the input panel.
       for (let row = FIRST_PLAYER_ROW; row <= LAST_PLAYER_ROW; row++) {
         const cell = sheet.getCell(row, previousGameColumn);
-        const result = cell.result;
+        const result = cell.result ?? cell.value;
         cell.value =
           typeof result === "number" || typeof result === "string"
             ? result
